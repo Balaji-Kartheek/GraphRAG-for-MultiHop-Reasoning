@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+env
+.env
+.env.*
+*.egg-info
+.eggs
+dist
+build
+
+# IDE and editors
+.idea
+.vscode
+*.swp
+*.swo
+
+# Logs and runtime data
+logs/
+*.log
+data/
+chroma_db/
+temp/
+tmp/
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentation (not needed at runtime)
+*.md
+!README.md
+
+# Tests (keep test_connections.py - used at startup)
+tests/
+*_test.py
+.pytest_cache
+.coverage
+htmlcov/
+
+# Misc
+.DS_Store
+Thumbs.db

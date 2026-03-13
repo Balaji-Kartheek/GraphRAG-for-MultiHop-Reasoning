@@ -3,3 +3,18 @@
 .venv/*
 
 temp/*
+
+app/__pycache__/*
+config/__pycache__/*
+extraction/__pycache__/*
+graph/__pycache__/*
+ingestion/__pycache__/*
+retrieval/__pycache__/*
+reasoning/__pycache__/*
+vector/__pycache__/*
+generation/__pycache__/*
+evaluation/__pycache__/*
+scripts/__pycache__/*
+tests/__pycache__/*
+
+logs/*
