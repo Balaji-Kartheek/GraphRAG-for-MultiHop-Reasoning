@@ -2,6 +2,7 @@
 Article preprocessing and cleaning module
 """
 import re
+import html
 import spacy
 from typing import List, Dict, Any
 from pymongo import MongoClient
@@ -37,6 +38,9 @@ class ArticlePreprocessor:
         if not text:
             return ""
         
+        # Decode HTML entities (e.g., &#x27; -> ')
+        text = html.unescape(text)
+
         # Remove HTML tags
         text = re.sub(r'<[^>]+>', '', text)
         
@@ -105,7 +109,7 @@ class ArticlePreprocessor:
         # Segment into sentences
         sentences = self.segment_sentences(cleaned_content)
         
-        # Update article in database
+        # Update article in database (incl. sentences and mark as processed so we don't reprocess)
         self.collection.update_one(
             {"article_id": article_id},
             {
@@ -113,7 +117,8 @@ class ArticlePreprocessor:
                     "title": cleaned_title,
                     "content": cleaned_content,
                     "sentences": sentences,
-                    "sentence_count": len(sentences)
+                    "sentence_count": len(sentences),
+                    "processed": True,
                 }
             }
         )
@@ -133,8 +138,13 @@ class ArticlePreprocessor:
         
         Returns number of articles preprocessed
         """
-        query = {"processed": False}
-        articles = list(self.collection.find(query).limit(limit if limit else 0))
+        query = {"processed": {"$ne": True}}
+        # Process newest articles first so recently ingested ones get sentences quickly
+        articles = list(
+            self.collection.find(query)
+            .sort("_id", -1)
+            .limit(limit if limit else 0)
+        )
         
         log.info(f"Preprocessing {len(articles)} articles")
         

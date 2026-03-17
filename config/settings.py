@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     
     # Triple Extraction
     confidence_threshold: float = Field(default=0.8, env="CONFIDENCE_THRESHOLD")
+    # Delay in seconds between Gemini API calls to avoid 429 rate limit (free tier: ~20/day, low RPM).
+    gemini_delay_seconds: int = Field(default=18, env="GEMINI_DELAY_SECONDS")
+    gemini_max_calls_per_run: int = Field(default=10, env="GEMINI_MAX_CALLS_PER_RUN")
     
     # API Configuration
     api_host: str = Field(default="0.0.0.0", env="API_HOST")
@@ -53,6 +56,16 @@ class Settings(BaseSettings):
     
     # Streamlit Configuration
     streamlit_port: int = Field(default=8501, env="STREAMLIT_PORT")
+    
+    # Scheduled Entries Limit
+    fetch_limit_per_run: int = Field(default=100, env="FETCH_LIMIT_PER_RUN")
+
+    # In-process scheduler: interval for pipeline runs. Use minutes for testing (e.g. 5), hours for production.
+    # If SCHEDULER_INTERVAL_MINUTES > 0, it takes precedence; else SCHEDULER_INTERVAL_HOURS is used.
+    scheduler_interval_minutes: int = Field(default=0, env="SCHEDULER_INTERVAL_MINUTES")
+    scheduler_interval_hours: float = Field(default=1.0, env="SCHEDULER_INTERVAL_HOURS")
+    # Set SCHEDULER_RUN_ON_START=1 to run the pipeline once immediately when scheduler starts (good for testing).
+    scheduler_run_on_start: bool = Field(default=False, env="SCHEDULER_RUN_ON_START")
     
     # Logging
     # TODO: Change the log level to INFO for production

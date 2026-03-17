@@ -114,10 +114,10 @@ class ArticleIngestion:
 
     def load_from_fetchers(self, limit: int = None) -> int:
         """
-        Fetch articles from configured sources (RSS, News API), apply tech filter, insert.
+        Fetch articles from configured sources (currently Hacker News), apply tech filter, insert.
         Returns count of newly inserted articles.
         """
-        from ingestion.sources import RSSFetcher, NewsAPIFetcher
+        from ingestion.sources import HackerNewsFetcher
 
         tech_keywords = [
             "ai", "artificial intelligence", "machine learning", "openai",
@@ -128,12 +128,8 @@ class ArticleIngestion:
         ]
         cap = limit or getattr(settings, "fetch_limit_per_run", None) or 100
         all_items = []
-        rss = RSSFetcher()
-        all_items.extend(rss.fetch(limit=cap))
-        remaining = cap - len(all_items)
-        if remaining > 0:
-            news = NewsAPIFetcher()
-            all_items.extend(news.fetch(limit=remaining))
+        hn = HackerNewsFetcher()
+        all_items.extend(hn.fetch(limit=cap))
 
         def has_tech(d):
             t, c = (d.get("title") or "").lower(), (d.get("content") or "").lower()
@@ -148,7 +144,11 @@ class ArticleIngestion:
             article = self._create_article_from_dict(d)
             if self.insert_article(article):
                 inserted += 1
-        log.info(f"load_from_fetchers: inserted {inserted} new articles")
+        total_fetched = len(filtered[:cap])
+        log.info(
+            f"load_from_fetchers: fetched {total_fetched} items, inserted {inserted} new articles "
+            f"(duplicates skipped: {total_fetched - inserted})"
+        )
         return inserted
     
     def insert_article(self, article: Article) -> bool:

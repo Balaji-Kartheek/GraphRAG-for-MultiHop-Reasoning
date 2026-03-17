@@ -6,11 +6,12 @@ Exits 0 on success, non-zero on failure.
 """
 import sys
 from config.logger import log
+from config.settings import settings
 
 if __name__ == "__main__":
     try:
         from scripts.run_pipeline import run_full_pipeline
-        run_full_pipeline(source="fetch", limit=None)
+        run_full_pipeline(source="fetch", limit=settings.fetch_limit_per_run)
         sys.exit(0)
     except Exception as e:
         log.error(f"Scheduled update failed: {e}")

@@ -1,8 +1,11 @@
 .env
+.venv/
+temp/
+logs/
 
-.venv/*
-
-temp/*
+# Python cache (all __pycache__ dirs and .pyc files)
+__pycache__/
+*.pyc
 
 app/__pycache__/*
 config/__pycache__/*
@@ -18,3 +21,5 @@ scripts/__pycache__/*
 tests/__pycache__/*
 
 logs/*
+
+.env

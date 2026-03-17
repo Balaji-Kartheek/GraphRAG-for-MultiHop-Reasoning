@@ -4,6 +4,7 @@ Converts article text into structured knowledge triples
 """
 import google.generativeai as genai
 import json
+import time
 from typing import List, Dict, Any
 from pymongo import MongoClient
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -30,6 +31,11 @@ class TripleExtractor:
         
         # Create index
         self.triples_collection.create_index("article_id")
+
+        # Per-run Gemini call budget and delay to avoid 429 (free tier has low RPM and daily limit)
+        self.calls_this_run = 0
+        self.max_calls_per_run = getattr(settings, "gemini_max_calls_per_run", 10)
+        self.delay_seconds = getattr(settings, "gemini_delay_seconds", 18)
         
         log.info("TripleExtractor initialized with Gemini Flash")
     
@@ -84,9 +90,18 @@ JSON Output:"""
         
         Returns list of Triple objects
         """
-        prompt = self.create_extraction_prompt(text)
-        
         try:
+            # Hard limit on number of Gemini calls per pipeline run
+            if self.calls_this_run >= self.max_calls_per_run:
+                log.warning(
+                    f"Gemini call budget reached for this run "
+                    f"({self.calls_this_run}/{self.max_calls_per_run}). Skipping."
+                )
+                return []
+
+            self.calls_this_run += 1
+
+            prompt = self.create_extraction_prompt(text)
             response = self.model.generate_content(prompt)
             response_text = response.text.strip()
             
@@ -120,7 +135,15 @@ JSON Output:"""
             log.debug(f"Response text: {response_text}")
             return []
         except Exception as e:
+            msg = str(e)
+            # Handle Gemini rate limits / quota errors gracefully:
+            # - don't keep retrying on 429 / ResourceExhausted
+            # - log and return no triples so the pipeline can continue.
+            if "429" in msg or "ResourceExhausted" in msg or "quota" in msg.lower():
+                log.error(f"Error extracting triples (rate limit/quota): {e}")
+                return []
             log.error(f"Error extracting triples: {e}")
+            # Other unexpected errors still bubble up to tenacity's retry logic
             raise
     
     def extract_from_article(self, article_id: str) -> List[Triple]:
@@ -185,9 +208,12 @@ JSON Output:"""
         
         processed = 0
         total_triples = 0
-        
-        for article in articles:
+        for i, article in enumerate(articles):
             try:
+                # Wait between Gemini calls to avoid 429 rate limit (free tier)
+                if i > 0 and self.delay_seconds > 0:
+                    log.debug(f"Waiting {self.delay_seconds}s before next Gemini call (rate limit).")
+                    time.sleep(self.delay_seconds)
                 triples = self.extract_from_article(article["article_id"])
                 processed += 1
                 total_triples += len(triples)

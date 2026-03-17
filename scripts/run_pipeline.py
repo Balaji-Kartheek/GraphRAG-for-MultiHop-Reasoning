@@ -39,6 +39,7 @@ def run_full_pipeline(
 
     log.info("=" * 80)
     log.info("STARTING GRAPHRAG PIPELINE")
+    log.info("Pipeline process started.")
     log.info("=" * 80)
 
     # Step 1: Ingest Articles
@@ -67,8 +68,8 @@ def run_full_pipeline(
         # Preprocess
         proc_count = preprocessor.preprocess_batch(limit)
         log.info(f"✓ Preprocessed {proc_count} articles")
-        
         preprocessor.close()
+        log.info("Ingestion and preprocessing completed successfully.")
     else:
         log.info("\n[STEP 2/6] Skipping preprocessing")
     
