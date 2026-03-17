@@ -1716,8 +1716,9 @@ Please retry in 28.080489976s. [links {
 2026-03-15 15:50:14 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
 2026-03-15 15:50:14 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
 2026-03-15 15:50:14 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
-2026-03-15 21:21:22 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
-2026-03-15 21:21:22 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://localhost:7687
+2026-03-15 18:22:28 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:22:28 | INFO     | app.api:shutdown_event:263 - API shutdown complete
+:20 - Connected to Neo4j at bolt://localhost:7687
 2026-03-15 21:21:22 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
 2026-03-15 21:21:22 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
 2026-03-15 21:21:22 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
@@ -1738,3 +1739,606 @@ Please retry in 28.080489976s. [links {
 2026-03-15 21:24:02 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
 2026-03-15 21:24:02 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
 2026-03-15 21:24:18 | ERROR    | utils.voice:speech_to_text:46 - STT error: Audio file could not be read as PCM WAV, AIFF/AIFF-C, or Native FLAC; check if file is corrupted or in another format
+2026-03-15 18:22:49 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:22:49 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:22:49 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:22:49 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:22:49 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:22:49 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:22:49 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:22:49 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:22:49 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:22:49 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:23:54 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:23:54 | INFO     | app.api:shutdown_event:263 - API shutdown complete
+2026-03-15 18:24:03 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:24:03 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:24:03 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:24:03 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:24:03 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:24:04 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:24:04 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:24:04 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:24:04 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:24:04 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:24:11 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:24:11 | INFO     | app.api:shutdown_event:263 - API shutdown complete
+2026-03-15 18:24:21 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:24:21 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:24:21 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:24:21 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:24:21 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:24:21 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:24:21 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:24:21 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:24:21 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:24:21 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:24:33 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:24:33 | INFO     | app.api:shutdown_event:263 - API shutdown complete
+2026-03-15 18:24:57 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:24:57 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:24:57 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:24:57 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:24:57 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:24:57 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:24:57 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:24:57 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:24:57 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:24:57 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:24:59 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:24:59 | INFO     | app.api:shutdown_event:263 - API shutdown complete
+2026-03-15 18:25:07 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:25:07 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:25:07 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:25:07 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:25:07 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:25:08 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:25:08 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:25:08 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:25:08 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:25:08 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:25:19 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:25:19 | INFO     | app.api:shutdown_event:263 - API shutdown complete
+2026-03-15 18:25:28 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:25:28 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:25:28 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:25:28 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:25:29 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:25:29 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:25:29 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:25:29 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:25:29 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:25:29 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:26:21 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:26:21 | INFO     | app.api:shutdown_event:276 - API shutdown complete
+2026-03-15 18:26:30 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:26:30 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:26:30 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:26:30 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:26:30 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:26:30 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:26:30 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:26:30 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:26:30 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:26:30 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:27:58 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:27:58 | INFO     | app.api:shutdown_event:276 - API shutdown complete
+2026-03-15 18:28:09 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:28:09 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:28:09 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:28:09 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:28:09 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:28:10 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:28:10 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:28:10 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:28:10 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:28:10 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:28:43 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:28:43 | INFO     | app.api:shutdown_event:276 - API shutdown complete
+2026-03-15 18:28:54 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:28:54 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:28:54 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:28:54 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:28:54 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:28:54 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:28:54 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:28:54 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:28:54 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:28:54 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-15 18:29:17 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-15 18:29:17 | INFO     | app.api:shutdown_event:276 - API shutdown complete
+2026-03-15 18:29:28 | INFO     | retrieval.query_entities:__init__:17 - Loaded spaCy for query entity detection
+2026-03-15 18:29:28 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://neo4j:7687
+2026-03-15 18:29:28 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-15 18:29:28 | INFO     | retrieval.subgraph_retrieval:__init__:32 - SubgraphRetriever initialized
+2026-03-15 18:29:28 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-15 18:29:28 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-15 18:29:28 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-15 18:29:28 | INFO     | retrieval.vector_retrieval:__init__:17 - VectorRetriever initialized
+2026-03-15 18:29:28 | INFO     | reasoning.multihop:__init__:22 - MultiHopReasoner initialized
+2026-03-15 18:29:28 | INFO     | generation.answer_generator:__init__:24 - AnswerGenerator initialized with Gemini Flash
+2026-03-16 00:01:14 | INFO     | __main__:run_full_pipeline:40 - ================================================================================
+2026-03-16 00:01:14 | INFO     | __main__:run_full_pipeline:41 - STARTING GRAPHRAG PIPELINE
+2026-03-16 00:01:14 | INFO     | __main__:run_full_pipeline:42 - ================================================================================
+2026-03-16 00:01:14 | INFO     | ingestion.fetch_articles:__init__:29 - ArticleIngestion initialized
+2026-03-16 00:01:14 | INFO     | __main__:run_full_pipeline:48 - 
+[STEP 1/6] Ingesting articles from fetchers (RSS/News API)...
+2026-03-16 00:01:15 | INFO     | ingestion.sources.rss_fetcher:fetch:71 - RSS fetcher collected 10 entries
+2026-03-16 00:01:15 | INFO     | ingestion.fetch_articles:load_from_fetchers:151 - load_from_fetchers: inserted 7 new articles
+2026-03-16 00:01:15 | INFO     | __main__:run_full_pipeline:53 - ✓ Ingested 7 articles
+2026-03-16 00:01:15 | INFO     | __main__:run_full_pipeline:60 - 
+[STEP 2/6] Preprocessing articles...
+2026-03-16 00:01:16 | INFO     | ingestion.preprocess:__init__:19 - Loaded spaCy model: en_core_web_sm
+2026-03-16 00:01:16 | INFO     | ingestion.preprocess:remove_duplicates:71 - Checking for duplicate articles
+2026-03-16 00:01:16 | INFO     | __main__:run_full_pipeline:65 - ✓ Removed 0 duplicates
+2026-03-16 00:01:16 | INFO     | ingestion.preprocess:preprocess_batch:139 - Preprocessing 10 articles
+2026-03-16 00:01:16 | INFO     | ingestion.preprocess:preprocess_batch:150 - Preprocessed 10 articles
+2026-03-16 00:01:16 | INFO     | __main__:run_full_pipeline:69 - ✓ Preprocessed 10 articles
+2026-03-16 00:01:16 | INFO     | __main__:run_full_pipeline:77 - 
+[STEP 3/6] Extracting named entities...
+2026-03-16 00:01:16 | INFO     | extraction.ner:__init__:32 - Loaded spaCy model for NER
+2026-03-16 00:01:17 | INFO     | extraction.ner:extract_batch:159 - Extracting entities from 7 articles
+2026-03-16 00:01:17 | INFO     | extraction.ner:extract_batch:169 - Extracted entities from 7 articles
+2026-03-16 00:01:17 | INFO     | __main__:run_full_pipeline:80 - ✓ Extracted entities from 7 articles
+2026-03-16 00:01:17 | INFO     | __main__:run_full_pipeline:83 -   Total unique entities: 58
+2026-03-16 00:01:17 | INFO     | __main__:run_full_pipeline:91 - 
+[STEP 4/6] Extracting knowledge triples...
+2026-03-16 00:01:17 | INFO     | extraction.triple_extractor:__init__:34 - TripleExtractor initialized with Gemini Flash
+2026-03-16 00:01:17 | INFO     | extraction.triple_extractor:extract_batch:184 - Extracting triples from 7 articles
+2026-03-16 00:01:20 | INFO     | extraction.triple_extractor:extract_from_article:168 - Extracted 1 triples from article 063a8d2b4f70e75a2905087c923a5e65
+2026-03-16 00:01:20 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 39.574583598s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 39
+}
+]
+2026-03-16 00:01:23 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 37.108121717s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 37
+}
+]
+2026-03-16 00:01:25 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 34.646999195s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 34
+}
+]
+2026-03-16 00:01:25 | ERROR    | extraction.triple_extractor:extract_batch:195 - Error extracting triples from 2b217331f35ad489a144675818a81e11: RetryError[<Future at 0x13fcd7c90 state=finished raised ResourceExhausted>]
+2026-03-16 00:01:26 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 34.193858096s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 34
+}
+]
+2026-03-16 00:01:28 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 31.784671836s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 31
+}
+]
+2026-03-16 00:01:30 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 29.360461134s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 29
+}
+]
+2026-03-16 00:01:30 | ERROR    | extraction.triple_extractor:extract_batch:195 - Error extracting triples from b70f77b0ef2148db7a5b41175d8964cd: RetryError[<Future at 0x13fcea690 state=finished raised ResourceExhausted>]
+2026-03-16 00:01:31 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 28.940914291s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 28
+}
+]
+2026-03-16 00:01:33 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 26.504311404s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 26
+}
+]
+2026-03-16 00:01:36 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 24.068809953s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 24
+}
+]
+2026-03-16 00:01:36 | ERROR    | extraction.triple_extractor:extract_batch:195 - Error extracting triples from d61b8d91c0cf838a3429cf5986c171a1: RetryError[<Future at 0x13eebf590 state=finished raised ResourceExhausted>]
+2026-03-16 00:01:36 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 23.639739343s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 23
+}
+]
+2026-03-16 00:01:39 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 21.212279398s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 21
+}
+]
+2026-03-16 00:01:41 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 18.755701471s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 18
+}
+]
+2026-03-16 00:01:41 | ERROR    | extraction.triple_extractor:extract_batch:195 - Error extracting triples from 4f1c9dbc2fa2b4d1f3ff097bf3e20282: RetryError[<Future at 0x13fcebf50 state=finished raised ResourceExhausted>]
+2026-03-16 00:01:41 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 18.339984096s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 18
+}
+]
+2026-03-16 00:01:44 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 15.910845009s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 15
+}
+]
+2026-03-16 00:01:46 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 13.482373975s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 13
+}
+]
+2026-03-16 00:01:46 | ERROR    | extraction.triple_extractor:extract_batch:195 - Error extracting triples from 280abc7ba83690d09c636c7652962942: RetryError[<Future at 0x13eec9690 state=finished raised ResourceExhausted>]
+2026-03-16 00:01:47 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 13.067646406s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 13
+}
+]
+2026-03-16 00:01:49 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 10.638040381s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 10
+}
+]
+2026-03-16 00:01:52 | ERROR    | extraction.triple_extractor:extract_triples_from_text:123 - Error extracting triples: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-2.5-flash
+Please retry in 8.199798393s. [links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-2.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 20
+}
+, retry_delay {
+  seconds: 8
+}
+]
+2026-03-16 00:01:52 | ERROR    | extraction.triple_extractor:extract_batch:195 - Error extracting triples from 94ed8de5a94414148909d31561e43e40: RetryError[<Future at 0x13fcd55d0 state=finished raised ResourceExhausted>]
+2026-03-16 00:01:52 | INFO     | extraction.triple_extractor:extract_batch:197 - Extracted 1 triples from 1 articles
+2026-03-16 00:01:52 | INFO     | __main__:run_full_pipeline:94 - ✓ Extracted triples from 1 articles
+2026-03-16 00:01:52 | INFO     | __main__:run_full_pipeline:97 -   Total triples: 40
+2026-03-16 00:01:52 | INFO     | __main__:run_full_pipeline:105 - 
+[STEP 5/6] Building knowledge graph...
+2026-03-16 00:01:52 | INFO     | graph.neo4j_client:__init__:20 - Connected to Neo4j at bolt://localhost:7687
+2026-03-16 00:01:52 | INFO     | graph.neo4j_client:_create_indexes:33 - Created Neo4j indexes
+2026-03-16 00:01:52 | INFO     | graph.graph_builder:__init__:24 - GraphBuilder initialized
+2026-03-16 00:01:52 | INFO     | graph.graph_builder:build_full_graph:136 - Building knowledge graph from all triples
+2026-03-16 00:01:54 | INFO     | graph.graph_builder:build_full_graph:163 - Graph built: {'articles_processed': 10, 'triples_added': 20, 'total_nodes': 17, 'total_relationships': 31}
+2026-03-16 00:01:54 | INFO     | __main__:run_full_pipeline:108 - ✓ Built knowledge graph
+2026-03-16 00:01:54 | INFO     | __main__:run_full_pipeline:109 -   Nodes: 17
+2026-03-16 00:01:54 | INFO     | __main__:run_full_pipeline:110 -   Relationships: 31
+2026-03-16 00:01:54 | INFO     | graph.neo4j_client:close:203 - Closed Neo4j connection
+2026-03-16 00:01:54 | INFO     | __main__:run_full_pipeline:118 - 
+[STEP 6/6] Embedding documents...
+2026-03-16 00:01:55 | INFO     | vector.embeddings:__init__:17 - Loading embedding model: sentence-transformers/all-MiniLM-L6-v2
+2026-03-16 00:02:00 | INFO     | vector.embeddings:__init__:22 - Embedding model loaded. Dimension: 384
+2026-03-16 00:02:00 | INFO     | vector.chroma_client:__init__:38 - ChromaDB initialized. Collection: article_embeddings
+2026-03-16 00:02:00 | INFO     | vector.chroma_client:embed_batch:141 - Embedding 7 articles
+2026-03-16 00:02:06 | INFO     | vector.chroma_client:embed_and_store_article:124 - Embedded article 063a8d2b4f70e75a2905087c923a5e65: 1 chunks
+2026-03-16 00:02:06 | INFO     | vector.chroma_client:embed_and_store_article:124 - Embedded article 2b217331f35ad489a144675818a81e11: 1 chunks
+2026-03-16 00:02:06 | INFO     | vector.chroma_client:embed_and_store_article:124 - Embedded article b70f77b0ef2148db7a5b41175d8964cd: 1 chunks
+2026-03-16 00:02:06 | INFO     | vector.chroma_client:embed_and_store_article:124 - Embedded article d61b8d91c0cf838a3429cf5986c171a1: 1 chunks
+2026-03-16 00:02:07 | INFO     | vector.chroma_client:embed_and_store_article:124 - Embedded article 4f1c9dbc2fa2b4d1f3ff097bf3e20282: 1 chunks
+2026-03-16 00:02:07 | INFO     | vector.chroma_client:embed_and_store_article:124 - Embedded article 280abc7ba83690d09c636c7652962942: 1 chunks
+2026-03-16 00:02:08 | INFO     | vector.chroma_client:embed_and_store_article:124 - Embedded article 94ed8de5a94414148909d31561e43e40: 1 chunks
+2026-03-16 00:02:08 | INFO     | vector.chroma_client:embed_batch:161 - Embedding complete: {'articles_embedded': 7, 'total_chunks': 7, 'collection_size': 7}
+2026-03-16 00:02:08 | INFO     | __main__:run_full_pipeline:121 - ✓ Embedded documents
+2026-03-16 00:02:08 | INFO     | __main__:run_full_pipeline:122 -   Articles: 7
+2026-03-16 00:02:08 | INFO     | __main__:run_full_pipeline:123 -   Chunks: 7
+2026-03-16 00:02:08 | INFO     | __main__:run_full_pipeline:129 - 
+================================================================================
+2026-03-16 00:02:08 | INFO     | __main__:run_full_pipeline:130 - PIPELINE COMPLETE!
+2026-03-16 00:02:08 | INFO     | __main__:run_full_pipeline:131 - ================================================================================
+2026-03-16 00:02:08 | INFO     | __main__:run_full_pipeline:132 - System is ready for queries.

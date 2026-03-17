@@ -6,6 +6,11 @@ import sys
 import argparse
 from pathlib import Path
 
+# Ensure project root is on path when run as python scripts/run_pipeline.py
+_project_root = Path(__file__).resolve().parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
 from ingestion.fetch_articles import ArticleIngestion
 from ingestion.preprocess import ArticlePreprocessor
 from extraction.ner import EntityExtractor
@@ -16,30 +21,35 @@ from config.logger import log
 
 
 def run_full_pipeline(
-    dataset_path: str,
+    dataset_path: str = None,
+    source: str = "csv",
     limit: int = None,
     skip_steps: list = None
 ):
     """
-    Run the complete GraphRAG pipeline
-    
+    Run the complete GraphRAG pipeline.
+
     Args:
-        dataset_path: Path to CSV dataset
-        limit: Limit number of articles to process
-        skip_steps: List of steps to skip
+        dataset_path: Path to CSV dataset (required when source=csv).
+        source: "csv" = load from CSV, "fetch" = load from RSS/News API.
+        limit: Limit number of articles to process.
+        skip_steps: List of steps to skip.
     """
-    
     skip_steps = skip_steps or []
-    
+
     log.info("=" * 80)
     log.info("STARTING GRAPHRAG PIPELINE")
     log.info("=" * 80)
-    
+
     # Step 1: Ingest Articles
     if "ingest" not in skip_steps:
-        log.info("\n[STEP 1/6] Ingesting articles from dataset...")
         ingestion = ArticleIngestion()
-        count = ingestion.load_from_csv(dataset_path, limit)
+        if source == "fetch":
+            log.info("\n[STEP 1/6] Ingesting articles from fetchers (RSS/News API)...")
+            count = ingestion.load_from_fetchers(limit)
+        else:
+            log.info("\n[STEP 1/6] Ingesting articles from dataset...")
+            count = ingestion.load_from_csv(dataset_path, limit)
         log.info(f"✓ Ingested {count} articles")
         ingestion.close()
     else:
@@ -125,42 +135,49 @@ def run_full_pipeline(
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description="GraphRAG Pipeline Orchestrator")
-    
+    parser.add_argument(
+        "--source",
+        type=str,
+        choices=["csv", "fetch"],
+        default="csv",
+        help="Ingestion source: csv (from file) or fetch (RSS/News API)",
+    )
     parser.add_argument(
         "--dataset",
         type=str,
-        required=True,
-        help="Path to CSV dataset"
+        default=None,
+        help="Path to CSV dataset (required when --source csv)",
     )
-    
     parser.add_argument(
         "--limit",
         type=int,
         default=None,
-        help="Limit number of articles to process"
+        help="Limit number of articles to process",
     )
-    
     parser.add_argument(
         "--skip",
         type=str,
         nargs="+",
         default=[],
         choices=["ingest", "preprocess", "entities", "triples", "graph", "embed"],
-        help="Steps to skip"
+        help="Steps to skip",
     )
-    
     args = parser.parse_args()
-    
-    # Verify dataset exists
-    if not Path(args.dataset).exists():
-        log.error(f"Dataset not found: {args.dataset}")
-        sys.exit(1)
-    
+
+    if args.source == "csv":
+        if not args.dataset:
+            log.error("--dataset is required when --source csv")
+            sys.exit(1)
+        if not Path(args.dataset).exists():
+            log.error(f"Dataset not found: {args.dataset}")
+            sys.exit(1)
+
     try:
         run_full_pipeline(
             dataset_path=args.dataset,
+            source=args.source,
             limit=args.limit,
-            skip_steps=args.skip
+            skip_steps=args.skip,
         )
     except Exception as e:
         log.error(f"Pipeline failed: {e}")

@@ -2,8 +2,8 @@
 Configuration settings for GraphRAG system
 """
 from pydantic_settings import BaseSettings
-from pydantic import Field
-from typing import Optional
+from pydantic import Field, field_validator
+from typing import Optional, List
 import os
 
 
@@ -62,6 +62,22 @@ class Settings(BaseSettings):
     # Dataset
     dataset_path: str = Field(default="./data/tech_news.csv", env="DATASET_PATH")
     target_articles: int = Field(default=800, env="TARGET_ARTICLES")
+    
+    # Dynamic fetch (RSS / News API)
+    news_api_key: str = Field(default="", env="NEWS_API_KEY")
+    rss_feeds: List[str] = Field(default_factory=list, env="RSS_FEEDS")
+    fetch_limit_per_run: Optional[int] = Field(default=100, env="FETCH_LIMIT_PER_RUN")
+    
+    @field_validator("rss_feeds", mode="before")
+    @classmethod
+    def parse_rss_feeds(cls, v):
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            if not v.strip():
+                return []
+            return [u.strip() for u in v.split(",") if u.strip()]
+        return []
     
     class Config:
         env_file = ".env"

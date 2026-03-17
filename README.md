@@ -118,6 +118,16 @@ This runs all steps:
 5. Build knowledge graph (Neo4j)
 6. Generate embeddings (ChromaDB)
 
+To ingest from RSS/News API instead of CSV:
+```bash
+python scripts/run_pipeline.py --source fetch --limit 100
+```
+
+**Scheduled updates (cron):** Run fetch + full pipeline every 6 hours:
+```bash
+0 */6 * * * cd /path/to/GraphRAG && .venv/bin/python -m scripts.scheduled_update
+```
+
 ### Step-by-Step (Manual)
 
 ```bash

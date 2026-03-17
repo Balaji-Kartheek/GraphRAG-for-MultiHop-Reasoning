@@ -181,6 +181,19 @@ async def ingest_articles(csv_path: str, limit: Optional[int] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/ingest/fetch")
+async def ingest_from_fetchers(limit: Optional[int] = None):
+    """Fetch and ingest articles from RSS/News API. Returns count of newly ingested articles."""
+    try:
+        ingestion = ArticleIngestion()
+        count = ingestion.load_from_fetchers(limit)
+        ingestion.close()
+        return {"status": "success", "articles_ingested": count}
+    except Exception as e:
+        log.error(f"Error fetching/ingesting articles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/process/preprocess")
 async def preprocess_articles(limit: Optional[int] = None):
     """Preprocess articles"""
