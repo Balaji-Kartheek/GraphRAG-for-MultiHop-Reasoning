@@ -107,7 +107,11 @@ Place your CSV in the `data/` directory.
 ### Full Pipeline (Automated)
 
 ```bash
+# Static Data
 python scripts/run_pipeline.py --dataset ./data/tech_news.csv --limit 100
+
+## Hacker News
+python scripts/run_pipeline.py --source fetch --limit 10
 ```
 
 This runs all steps:

@@ -67,6 +67,17 @@ Source Articles:
 Now provide your response:"""
         
         return prompt
+
+    @staticmethod
+    def _is_rate_limit_error(err: Exception) -> bool:
+        """Detect Gemini quota/rate-limit errors from wrapped exceptions."""
+        msg = str(err).lower()
+        return (
+            "429" in msg
+            or "resourceexhausted" in msg
+            or "quota" in msg
+            or "rate limit" in msg
+        )
     
     @retry(
         stop=stop_after_attempt(3),
@@ -92,6 +103,10 @@ Now provide your response:"""
             return answer
             
         except Exception as e:
+            if self._is_rate_limit_error(e):
+                # Surface a clean, handled signal to caller so API doesn't fail with 500.
+                log.warning(f"Gemini rate limit/quota reached while generating answer: {e}")
+                raise RuntimeError("GEMINI_RATE_LIMIT") from e
             log.error(f"Error generating answer: {e}")
             raise
     
@@ -165,7 +180,40 @@ Now provide your response:"""
             )
         
         # Generate answer with LLM
-        answer_text = self.generate_answer(query, formatted_context)
+        try:
+            answer_text = self.generate_answer(query, formatted_context)
+        except Exception as e:
+            if self._is_rate_limit_error(e):
+                # Graceful fallback: return context-backed response without hard failing.
+                log.warning("Returning fallback answer due to Gemini quota/rate limit.")
+                source_articles = []
+                article_ids = set()
+                for chunk in context.vector_results:
+                    article_id = chunk.get("article_id")
+                    if article_id and article_id not in article_ids:
+                        article_ids.add(article_id)
+                        source_articles.append({
+                            "article_id": article_id,
+                            "source": chunk.get("source", "Unknown"),
+                            "title": chunk.get("metadata", {}).get("title", "")[:100]
+                        })
+
+                reasoning_path = []
+                for path in context.graph_paths[:5]:
+                    reasoning_path.append(" -> ".join(path.nodes))
+
+                return QueryResult(
+                    answer=(
+                        "I found relevant context, but answer generation is temporarily limited "
+                        "because the Gemini quota/rate limit was reached. "
+                        "Please retry later, reduce query frequency, or increase API quota."
+                    ),
+                    reasoning_path=reasoning_path,
+                    source_articles=source_articles,
+                    graph_paths=[[node for node in path.nodes] for path in context.graph_paths[:5]],
+                    insufficient_context=False
+                )
+            raise
         
         # Parse response
         parsed = self.parse_answer_response(answer_text)
