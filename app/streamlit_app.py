@@ -5,6 +5,7 @@ Supports multilingual (UI, query, response) and voice (STT + TTS).
 """
 import os
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+import json
 import streamlit as st
 from pyvis.network import Network
 import streamlit.components.v1 as components
@@ -12,6 +13,7 @@ from typing import List, Dict, Optional
 
 from reasoning.multihop import MultiHopReasoner
 from generation.answer_generator import AnswerGenerator
+from evaluation.benchmark import GraphRAGEvaluator
 from config.logger import log
 from utils.translate import (
     SUPPORTED_LANGUAGES,
@@ -117,6 +119,70 @@ def create_graph_visualization(graph_paths: List[List[str]]) -> str:
     return html
 
 
+def render_evaluation_tab():
+    """Render GraphRAG vs standard RAG evaluation UI."""
+    st.header("📈 Multi-Hop Evaluation")
+    st.caption("Compare GraphRAG vs Standard RAG on a custom question set.")
+
+    default_questions = [
+        {
+            "question": "Which companies collaborated with OpenAI across the collaboration articles?",
+            "ground_truth": "Google, Salesforce, Hugging Face, and Cohere collaborated with OpenAI."
+        },
+        {
+            "question": "Which companies are connected to Microsoft through OpenAI relationships?",
+            "ground_truth": "Microsoft is connected to OpenAI, and through OpenAI to Google, Salesforce, Hugging Face, and Cohere."
+        },
+        {
+            "question": "Which organizations were involved in both OpenAI neural-network collaborations and broader AI partnerships?",
+            "ground_truth": "Salesforce appears in OpenAI neural-network collaborations and broader AI collaboration/partnership contexts."
+        },
+        {
+            "question": "From collaboration and partnership links, which company appears as a bridge between Oracle and OpenAI ecosystems?",
+            "ground_truth": "Cohere acts as a bridge via Oracle-Cohere partnership and OpenAI-Cohere collaboration."
+        },
+    ]
+
+    dataset_text = st.text_area(
+        "Evaluation Dataset (JSON list with question + ground_truth)",
+        value=json.dumps(default_questions, indent=2),
+        height=220,
+        key="eval_dataset_json",
+    )
+
+    if st.button("🚀 Run Evaluation", type="primary", use_container_width=True):
+        try:
+            questions = json.loads(dataset_text)
+            if not isinstance(questions, list) or not questions:
+                st.error("Provide a non-empty JSON list.")
+                return
+
+            with st.spinner("Running evaluation..."):
+                evaluator = GraphRAGEvaluator()
+                report = evaluator.evaluate_dataset(questions)
+                evaluator.close()
+
+            summary = report.get("summary", {})
+            if not summary:
+                st.warning("No evaluation results were produced.")
+                return
+
+            c1, c2, c3 = st.columns(3)
+            c1.metric("GraphRAG F1", f"{summary.get('graphrag_avg_f1', 0):.3f}")
+            c2.metric("Standard RAG F1", f"{summary.get('rag_avg_f1', 0):.3f}")
+            c3.metric("GraphRAG Win Rate", f"{summary.get('graphrag_win_rate', 0)*100:.1f}%")
+
+            c4, c5 = st.columns(2)
+            c4.metric("GraphRAG Avg Latency (ms)", f"{summary.get('graphrag_avg_latency_ms', 0):.0f}")
+            c5.metric("Standard RAG Avg Latency (ms)", f"{summary.get('rag_avg_latency_ms', 0):.0f}")
+
+            st.subheader("Per-question Results")
+            st.dataframe(report.get("rows", []), use_container_width=True)
+        except Exception as e:
+            st.error(f"Evaluation failed: {e}")
+            log.error(f"Evaluation tab error: {e}")
+
+
 def main():
     """Main Streamlit app"""
     lang = st.session_state.lang
@@ -125,6 +191,10 @@ def main():
     # Title (localized)
     st.title("🧠 " + L("title"))
     st.markdown("*" + L("subtitle") + "*")
+    mode = st.radio("Mode", ["Query", "Evaluation"], horizontal=True)
+    if mode == "Evaluation":
+        render_evaluation_tab()
+        return
     
     # Sidebar
     with st.sidebar:

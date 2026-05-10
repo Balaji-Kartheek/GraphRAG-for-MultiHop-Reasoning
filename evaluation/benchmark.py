@@ -1,299 +1,182 @@
 """
-Evaluation module for GraphRAG system
-Compares GraphRAG vs Standard RAG vs Plain LLM
+Evaluation module for GraphRAG system.
+Compares GraphRAG vs Standard RAG with deterministic metrics.
 """
-from typing import List, Dict, Any, Tuple
+from dataclasses import dataclass, asdict
+from typing import List, Dict, Any
 import json
-from dataclasses import dataclass
-import google.generativeai as genai
+import re
+import time
+
 from reasoning.multihop import MultiHopReasoner
 from generation.answer_generator import AnswerGenerator
-from vector.chroma_client import ChromaClient
-from config.settings import settings
+from retrieval.vector_retrieval import VectorRetriever
+from config.models import RetrievalContext, DocumentChunk
 from config.logger import log
 
 
+def _normalize(text: str) -> str:
+    return re.sub(r"\s+", " ", (text or "").strip().lower())
+
+
+def _tokenize(text: str) -> List[str]:
+    return re.findall(r"\b[a-z0-9]+\b", _normalize(text))
+
+
+def exact_match(pred: str, truth: str) -> float:
+    return 1.0 if _normalize(pred) == _normalize(truth) else 0.0
+
+
+def token_f1(pred: str, truth: str) -> float:
+    pred_tokens = _tokenize(pred)
+    truth_tokens = _tokenize(truth)
+    if not pred_tokens or not truth_tokens:
+        return 0.0
+    pred_set, truth_set = set(pred_tokens), set(truth_tokens)
+    overlap = len(pred_set.intersection(truth_set))
+    if overlap == 0:
+        return 0.0
+    precision = overlap / max(len(pred_set), 1)
+    recall = overlap / max(len(truth_set), 1)
+    return 2 * precision * recall / (precision + recall)
+
+
 @dataclass
-class EvaluationResult:
-    """Evaluation result for a single question"""
+class EvalRow:
     question: str
     ground_truth: str
     graphrag_answer: str
-    standard_rag_answer: str
-    plain_llm_answer: str
-    graphrag_score: float
-    standard_rag_score: float
-    plain_llm_score: float
+    rag_answer: str
+    graphrag_f1: float
+    rag_f1: float
+    graphrag_sources: int
+    rag_sources: int
+    graphrag_latency_ms: int
+    rag_latency_ms: int
 
 
 class GraphRAGEvaluator:
-    """Evaluate GraphRAG performance"""
-    
+    """Evaluate GraphRAG against a vector-only RAG baseline."""
+
     def __init__(self):
-        """Initialize evaluation components"""
         self.reasoner = MultiHopReasoner()
         self.generator = AnswerGenerator()
-        self.chroma_client = ChromaClient()
-        
-        genai.configure(api_key=settings.gemini_api_key)
-        self.judge_model = genai.GenerativeModel(settings.gemini_model)
-        
+        self.vector_retriever = VectorRetriever()
         log.info("GraphRAGEvaluator initialized")
-    
-    def graphrag_answer(self, question: str) -> str:
-        """
-        Get answer using full GraphRAG pipeline
-        
-        Graph + Vector retrieval
-        """
-        # Retrieve context
-        context = self.reasoner.retrieve_context(question)
-        formatted_context = self.reasoner.format_context_for_llm(context)
-        
-        # Generate answer
-        result = self.generator.generate_query_result(
-            question,
-            context,
-            formatted_context
-        )
-        
-        return result.answer
-    
-    def standard_rag_answer(self, question: str) -> str:
-        """
-        Get answer using standard RAG (vector only)
-        
-        No graph retrieval
-        """
-        # Vector retrieval only
-        chunks = self.chroma_client.query(question, n_results=5)
-        
-        # Format context
-        context = "Retrieved Documents:\n\n"
-        for i, doc in enumerate(chunks["documents"], 1):
-            context += f"Document {i}: {doc}\n\n"
-        
-        # Generate answer
-        prompt = f"""Answer the following question using only the provided documents.
 
-Question: {question}
-
-{context}
-
-Answer:"""
-        
-        response = self.judge_model.generate_content(prompt)
-        return response.text.strip()
-    
-    def plain_llm_answer(self, question: str) -> str:
-        """
-        Get answer using plain LLM (no retrieval)
-        
-        Knowledge from training data only
-        """
-        prompt = f"""Answer the following question based on your knowledge.
-
-Question: {question}
-
-Answer:"""
-        
-        response = self.judge_model.generate_content(prompt)
-        return response.text.strip()
-    
-    def llm_as_judge_score(
-        self, 
-        question: str, 
-        answer: str, 
-        ground_truth: str
-    ) -> float:
-        """
-        Use LLM to judge answer quality
-        
-        Returns score 0-1
-        """
-        prompt = f"""You are an expert evaluator. Score the answer based on:
-1. Factual accuracy compared to ground truth
-2. Completeness
-3. Relevance to the question
-
-Question: {question}
-
-Ground Truth: {ground_truth}
-
-Answer to Evaluate: {answer}
-
-Provide a score from 0.0 to 1.0 where:
-- 1.0 = Perfect answer, matches ground truth
-- 0.7-0.9 = Good answer, mostly correct
-- 0.4-0.6 = Partial answer, some errors
-- 0.0-0.3 = Poor answer, mostly incorrect
-
-Return ONLY the numeric score as a decimal number (e.g., 0.85)"""
-        
-        try:
-            response = self.judge_model.generate_content(prompt)
-            score_text = response.text.strip()
-            
-            # Extract numeric score
-            score = float(score_text)
-            return max(0.0, min(1.0, score))
-        except:
-            log.warning(f"Failed to parse score, using 0.0")
-            return 0.0
-    
-    def evaluate_question(
-        self, 
-        question: str, 
-        ground_truth: str
-    ) -> EvaluationResult:
-        """
-        Evaluate a single question with all three methods
-        """
-        log.info(f"Evaluating question: {question}")
-        
-        # Get answers from all three methods
-        graphrag_ans = self.graphrag_answer(question)
-        standard_rag_ans = self.standard_rag_answer(question)
-        plain_llm_ans = self.plain_llm_answer(question)
-        
-        # Score each answer
-        graphrag_score = self.llm_as_judge_score(question, graphrag_ans, ground_truth)
-        standard_rag_score = self.llm_as_judge_score(question, standard_rag_ans, ground_truth)
-        plain_llm_score = self.llm_as_judge_score(question, plain_llm_ans, ground_truth)
-        
-        result = EvaluationResult(
-            question=question,
-            ground_truth=ground_truth,
-            graphrag_answer=graphrag_ans,
-            standard_rag_answer=standard_rag_ans,
-            plain_llm_answer=plain_llm_ans,
-            graphrag_score=graphrag_score,
-            standard_rag_score=standard_rag_score,
-            plain_llm_score=plain_llm_score
-        )
-        
-        log.info(f"Scores - GraphRAG: {graphrag_score:.2f}, Standard RAG: {standard_rag_score:.2f}, Plain LLM: {plain_llm_score:.2f}")
-        
-        return result
-    
-    def evaluate_dataset(
-        self, 
-        questions: List[Dict[str, str]]
-    ) -> Dict[str, Any]:
-        """
-        Evaluate a dataset of questions
-        
-        Args:
-            questions: List of dicts with 'question' and 'ground_truth'
-        
-        Returns:
-            Evaluation summary with scores
-        """
-        results = []
-        
-        for item in questions:
-            try:
-                result = self.evaluate_question(
-                    item["question"],
-                    item["ground_truth"]
+    @staticmethod
+    def _to_document_chunks(vector_chunks: List[Dict[str, Any]]) -> List[DocumentChunk]:
+        docs = []
+        for c in vector_chunks:
+            docs.append(
+                DocumentChunk(
+                    chunk_id=c.get("chunk_id", ""),
+                    text=c.get("text", ""),
+                    article_id=c.get("article_id", ""),
+                    chunk_index=c.get("chunk_index", 0),
+                    metadata=c.get("metadata", {}) or {},
                 )
-                results.append(result)
+            )
+        return docs
+
+    def _answer_graphrag(self, question: str) -> Dict[str, Any]:
+        t0 = time.time()
+        context = self.reasoner.retrieve_context(question)
+        formatted = self.reasoner.format_context_for_llm(context)
+        result = self.generator.generate_query_result(question, context, formatted)
+        elapsed_ms = int((time.time() - t0) * 1000)
+        return {"answer": result.answer, "sources": len(result.source_articles), "latency_ms": elapsed_ms}
+
+    def _answer_standard_rag(self, question: str, top_k: int = 5) -> Dict[str, Any]:
+        t0 = time.time()
+        vector_chunks = self.vector_retriever.retrieve_similar_chunks(question, top_k=top_k)
+        context = RetrievalContext(
+            graph_paths=[],
+            vector_results=self._to_document_chunks(vector_chunks),
+            entities_detected=[],
+        )
+        formatted = self.reasoner.format_context_for_llm(context)
+        result = self.generator.generate_query_result(question, context, formatted)
+        elapsed_ms = int((time.time() - t0) * 1000)
+        return {"answer": result.answer, "sources": len(result.source_articles), "latency_ms": elapsed_ms}
+
+    def evaluate_dataset(self, questions: List[Dict[str, str]]) -> Dict[str, Any]:
+        rows: List[EvalRow] = []
+        for item in questions:
+            question = item["question"]
+            truth = item["ground_truth"]
+            log.info(f"Evaluating question: {question}")
+            try:
+                gr = self._answer_graphrag(question)
+                rg = self._answer_standard_rag(question)
+                rows.append(
+                    EvalRow(
+                        question=question,
+                        ground_truth=truth,
+                        graphrag_answer=gr["answer"],
+                        rag_answer=rg["answer"],
+                        graphrag_f1=token_f1(gr["answer"], truth),
+                        rag_f1=token_f1(rg["answer"], truth),
+                        graphrag_sources=gr["sources"],
+                        rag_sources=rg["sources"],
+                        graphrag_latency_ms=gr["latency_ms"],
+                        rag_latency_ms=rg["latency_ms"],
+                    )
+                )
             except Exception as e:
-                log.error(f"Error evaluating question: {e}")
-        
-        # Calculate aggregate metrics
-        avg_graphrag = sum(r.graphrag_score for r in results) / len(results)
-        avg_standard_rag = sum(r.standard_rag_score for r in results) / len(results)
-        avg_plain_llm = sum(r.plain_llm_score for r in results) / len(results)
-        
+                log.error(f"Evaluation failed for question '{question}': {e}")
+
+        total = len(rows)
+        if total == 0:
+            return {"total_questions": 0, "rows": [], "summary": {}}
+
+        def avg(vals: List[float]) -> float:
+            return sum(vals) / len(vals)
+
+        graphrag_f1_vals = [r.graphrag_f1 for r in rows]
+        rag_f1_vals = [r.rag_f1 for r in rows]
+
+        graph_wins = sum(1 for r in rows if r.graphrag_f1 > r.rag_f1)
+
         summary = {
-            "total_questions": len(results),
-            "avg_scores": {
-                "graphrag": avg_graphrag,
-                "standard_rag": avg_standard_rag,
-                "plain_llm": avg_plain_llm
-            },
-            "improvement": {
-                "vs_standard_rag": ((avg_graphrag - avg_standard_rag) / avg_standard_rag * 100),
-                "vs_plain_llm": ((avg_graphrag - avg_plain_llm) / avg_plain_llm * 100)
-            },
-            "results": results
+            "graphrag_avg_f1": avg(graphrag_f1_vals),
+            "rag_avg_f1": avg(rag_f1_vals),
+            "graphrag_avg_latency_ms": avg([r.graphrag_latency_ms for r in rows]),
+            "rag_avg_latency_ms": avg([r.rag_latency_ms for r in rows]),
+            "graphrag_avg_sources": avg([r.graphrag_sources for r in rows]),
+            "rag_avg_sources": avg([r.rag_sources for r in rows]),
+            "graphrag_win_rate": graph_wins / total,
         }
-        
-        return summary
-    
-    def save_results(self, summary: Dict[str, Any], filepath: str):
-        """Save evaluation results to file"""
-        # Convert dataclass to dict
-        results_dict = []
-        for result in summary["results"]:
-            results_dict.append({
-                "question": result.question,
-                "ground_truth": result.ground_truth,
-                "answers": {
-                    "graphrag": result.graphrag_answer,
-                    "standard_rag": result.standard_rag_answer,
-                    "plain_llm": result.plain_llm_answer
-                },
-                "scores": {
-                    "graphrag": result.graphrag_score,
-                    "standard_rag": result.standard_rag_score,
-                    "plain_llm": result.plain_llm_score
-                }
-            })
-        
-        output = {
-            "summary": {
-                "total_questions": summary["total_questions"],
-                "avg_scores": summary["avg_scores"],
-                "improvement": summary["improvement"]
-            },
-            "results": results_dict
+
+        return {
+            "total_questions": total,
+            "summary": summary,
+            "rows": [asdict(r) for r in rows],
         }
-        
-        with open(filepath, 'w') as f:
-            json.dump(output, f, indent=2)
-        
-        log.info(f"Results saved to {filepath}")
-    
+
+    def save_results(self, report: Dict[str, Any], filepath: str):
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(report, f, indent=2)
+        log.info(f"Saved evaluation report to {filepath}")
+
     def close(self):
-        """Close connections"""
         self.reasoner.close()
-        self.chroma_client.close()
+        self.vector_retriever.close()
 
 
 if __name__ == "__main__":
-    # Example evaluation
     evaluator = GraphRAGEvaluator()
-    
-    # Sample multi-hop questions
     test_questions = [
         {
             "question": "Which companies collaborate with organizations funded by Microsoft?",
-            "ground_truth": "OpenAI partners with Nvidia, and Microsoft funded OpenAI."
+            "ground_truth": "Microsoft funded OpenAI, and OpenAI collaborated with Nvidia.",
         },
         {
-            "question": "What partnerships involve companies that invested in AI startups?",
-            "ground_truth": "Microsoft invested in OpenAI, which partnered with Nvidia."
-        }
+            "question": "Which companies formed a strategic partnership on AI development?",
+            "ground_truth": "Oracle and Cohere formed a strategic partnership on AI development.",
+        },
     ]
-    
-    # Run evaluation
-    summary = evaluator.evaluate_dataset(test_questions)
-    
-    print("\n" + "="*80)
-    print("EVALUATION SUMMARY")
-    print("="*80)
-    print(f"Total Questions: {summary['total_questions']}")
-    print(f"\nAverage Scores:")
-    print(f"  GraphRAG:      {summary['avg_scores']['graphrag']:.3f}")
-    print(f"  Standard RAG:  {summary['avg_scores']['standard_rag']:.3f}")
-    print(f"  Plain LLM:     {summary['avg_scores']['plain_llm']:.3f}")
-    print(f"\nImprovement:")
-    print(f"  vs Standard RAG: +{summary['improvement']['vs_standard_rag']:.1f}%")
-    print(f"  vs Plain LLM:    +{summary['improvement']['vs_plain_llm']:.1f}%")
-    
-    # Save results
-    evaluator.save_results(summary, "evaluation_results.json")
-    
+    report = evaluator.evaluate_dataset(test_questions)
+    print(json.dumps(report["summary"], indent=2))
+    evaluator.save_results(report, "evaluation_results.json")
     evaluator.close()
