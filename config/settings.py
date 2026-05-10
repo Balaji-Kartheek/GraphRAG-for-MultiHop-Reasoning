@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     # Gemini API Configuration
     gemini_api_key: str = Field(default="", env="GEMINI_API_KEY")
     gemini_model: str = Field(default="gemini-2.0-flash", env="GEMINI_MODEL")
+
+    # LLM provider configuration
+    llm_provider: str = Field(default="ollama", env="LLM_PROVIDER")
+    ollama_base_url: str = Field(default="http://localhost:11434", env="OLLAMA_BASE_URL")
+    ollama_model: str = Field(default="llama3.1:8b", env="OLLAMA_MODEL")
     
     # Embedding Model
     embedding_model: str = Field(

@@ -45,12 +45,19 @@ class VectorRetriever:
         # Format results
         chunks = []
         for i in range(len(results["documents"])):
+            chunk_id = results["ids"][i]
+            chunk_index = 0
+            if isinstance(chunk_id, str) and "_" in chunk_id:
+                suffix = chunk_id.rsplit("_", 1)[-1]
+                if suffix.isdigit():
+                    chunk_index = int(suffix)
             chunk = {
                 "text": results["documents"][i],
                 "distance": results["distances"][i],
                 "similarity": 1 - results["distances"][i],  # Convert distance to similarity
                 "metadata": results["metadatas"][i],
-                "chunk_id": results["ids"][i],
+                "chunk_id": chunk_id,
+                "chunk_index": chunk_index,
                 "article_id": results["metadatas"][i].get("article_id"),
                 "source": results["metadatas"][i].get("source")
             }

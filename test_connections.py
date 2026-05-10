@@ -91,6 +91,20 @@ def test_gemini():
         return False
 
 
+def test_ollama():
+    """Test Ollama API connection"""
+    try:
+        import requests
+        base_url = settings.ollama_base_url.rstrip("/")
+        response = requests.get(f"{base_url}/api/tags", timeout=10)
+        response.raise_for_status()
+        log.info("✓ Ollama connection successful")
+        return True
+    except Exception as e:
+        log.error(f"✗ Ollama connection failed: {e}")
+        return False
+
+
 def test_spacy():
     """Test spaCy model"""
     try:
@@ -132,10 +146,14 @@ def main():
         ("MongoDB", test_mongodb),
         ("Neo4j", test_neo4j),
         ("ChromaDB", test_chromadb),
-        ("Gemini API", test_gemini),
         ("spaCy", test_spacy),
         ("Sentence Transformers", test_sentence_transformers)
     ]
+    provider = (settings.llm_provider or "ollama").lower()
+    if provider == "gemini":
+        tests.insert(3, ("Gemini API", test_gemini))
+    else:
+        tests.insert(3, ("Ollama", test_ollama))
     
     results = {}
     

@@ -2,7 +2,6 @@
 ChromaDB client for vector storage and retrieval
 """
 import chromadb
-from chromadb.config import Settings as ChromaSettings
 from typing import List, Dict, Any, Optional
 from pymongo import MongoClient
 from vector.embeddings import EmbeddingGenerator
@@ -15,11 +14,9 @@ class ChromaClient:
     
     def __init__(self):
         """Initialize ChromaDB client"""
-        # Initialize ChromaDB with persistent storage
-        self.client = chromadb.Client(ChromaSettings(
-            persist_directory=settings.chroma_persist_dir,
-            anonymized_telemetry=False
-        ))
+        # Initialize ChromaDB with persistent local storage.
+        # Using PersistentClient ensures vectors survive process restarts.
+        self.client = chromadb.PersistentClient(path=settings.chroma_persist_dir)
         
         # Get or create collection
         self.collection = self.client.get_or_create_collection(
@@ -130,7 +127,15 @@ class ChromaClient:
         
         Returns statistics
         """
-        query = {"embedded": {"$ne": True}}
+        # Recovery mode: if Chroma is empty but Mongo flags say embedded=true,
+        # re-embed all articles to repair inconsistent state.
+        collection_size = self.collection.count()
+        if collection_size == 0:
+            log.warning("Chroma collection is empty; switching to full re-embed mode")
+            query = {}
+            self.articles_collection.update_many({}, {"$set": {"embedded": False}})
+        else:
+            query = {"embedded": {"$ne": True}}
         cursor = self.articles_collection.find(query, {"article_id": 1})
         
         if limit:

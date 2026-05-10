@@ -2,7 +2,8 @@
 Multi-hop reasoning module
 Combines graph traversal and vector retrieval for complex queries
 """
-from typing import List, Dict, Any
+import re
+from typing import List, Dict, Any, Optional
 from retrieval.query_entities import QueryEntityDetector
 from retrieval.subgraph_retrieval import SubgraphRetriever
 from retrieval.vector_retrieval import VectorRetriever
@@ -20,6 +21,21 @@ class MultiHopReasoner:
         self.vector_retriever = VectorRetriever()
         
         log.info("MultiHopReasoner initialized")
+
+    @staticmethod
+    def _chunk_get(chunk: Any, key: str, default=None):
+        """Read field from either dict chunk or Pydantic model chunk."""
+        if isinstance(chunk, dict):
+            return chunk.get(key, default)
+        return getattr(chunk, key, default)
+
+    def _chunk_source(self, chunk: Any) -> str:
+        """Resolve source from top-level field or metadata fallback."""
+        source = self._chunk_get(chunk, "source")
+        if source:
+            return source
+        metadata = self._chunk_get(chunk, "metadata", {}) or {}
+        return metadata.get("source", "Unknown")
     
     def retrieve_context(
         self, 
@@ -46,19 +62,35 @@ class MultiHopReasoner:
         
         log.info(f"Detected entities: {query_entities}")
         
+        # Parse query intent/constraints for better retrieval.
+        source_filter = self._extract_source_filter(query)
+        relation_hints = self._extract_relation_hints(query)
+
         # Step 2: Retrieve graph paths
         graph_result = self.graph_retriever.retrieve_query_subgraph(
             query_entities,
             depth=graph_depth
         )
         graph_paths = graph_result.get("all_paths", [])
+        if query_entities and not graph_paths:
+            log.info("Detected entities produced no graph paths; retrying with fallback global subgraph")
+            graph_result = self.graph_retriever.retrieve_query_subgraph(
+                [],
+                depth=graph_depth
+            )
+            graph_paths = graph_result.get("all_paths", [])
+        if relation_hints:
+            graph_paths = self._filter_graph_paths_by_relations(graph_paths, relation_hints)
+        if graph_result.get("fallback_mode"):
+            log.info("Graph retrieval is running in fallback mode (no explicit entities detected)")
         
         log.info(f"Retrieved {len(graph_paths)} graph paths")
         
         # Step 3: Retrieve similar documents
         vector_chunks = self.vector_retriever.retrieve_similar_chunks(
             query,
-            top_k=top_k_vector
+            top_k=top_k_vector,
+            metadata_filter=source_filter,
         )
         
         log.info(f"Retrieved {len(vector_chunks)} vector chunks")
@@ -71,6 +103,51 @@ class MultiHopReasoner:
         )
         
         return context
+
+    @staticmethod
+    def _extract_source_filter(query: str) -> Optional[Dict[str, Any]]:
+        """
+        Detect source constraints from query text.
+        Example: "published by Wired" -> {"source": "Wired"}
+        """
+        query_stripped = query.strip()
+        patterns = [
+            r"\bpublished by\s+([a-zA-Z0-9&\-\.\s]+?)(?:[\?\.,]|$)",
+            r"\bfrom\s+([a-zA-Z0-9&\-\.\s]+?)(?:[\?\.,]|$)",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, query_stripped, flags=re.IGNORECASE)
+            if match:
+                source = " ".join(match.group(1).split()).strip(" ?.,")
+                if source:
+                    return {"source": source}
+        return None
+
+    @staticmethod
+    def _extract_relation_hints(query: str) -> List[str]:
+        """Map query wording to relation-type hints."""
+        q = query.lower()
+        hints = []
+        if any(k in q for k in ["collaborat", "partnership", "partnered", "worked with"]):
+            hints.extend(["COLLABORATED_WITH", "PARTNERED_WITH"])
+        if any(k in q for k in ["invest", "funded", "funding"]):
+            hints.append("INVESTED_IN")
+        if any(k in q for k in ["acquire", "acquisition", "bought"]):
+            hints.append("ACQUIRED")
+        return list(dict.fromkeys(hints))
+
+    @staticmethod
+    def _filter_graph_paths_by_relations(paths, relation_hints: List[str]):
+        """Keep only paths containing at least one hinted relation."""
+        if not relation_hints:
+            return paths
+        hint_set = set(relation_hints)
+        filtered = []
+        for path in paths:
+            rels = set(path.relationships or [])
+            if rels.intersection(hint_set):
+                filtered.append(path)
+        return filtered
     
     def format_context_for_llm(self, context: RetrievalContext) -> str:
         """
@@ -115,11 +192,12 @@ class MultiHopReasoner:
         
         if context.vector_results:
             for i, chunk in enumerate(context.vector_results, 1):
+                metadata = self._chunk_get(chunk, "metadata", {}) or {}
                 formatted += f"Document {i}:\n"
-                formatted += f"  Source: {chunk.get('source', 'Unknown')}\n"
-                formatted += f"  Article ID: {chunk.get('article_id', 'Unknown')}\n"
-                formatted += f"  Similarity: {chunk.get('similarity', 0):.3f}\n"
-                formatted += f"  Content: {chunk['text']}\n"
+                formatted += f"  Source: {self._chunk_source(chunk)}\n"
+                formatted += f"  Article ID: {self._chunk_get(chunk, 'article_id', 'Unknown')}\n"
+                formatted += f"  Similarity: {self._chunk_get(chunk, 'similarity', 0):.3f}\n"
+                formatted += f"  Content: {self._chunk_get(chunk, 'text', '')}\n"
                 formatted += "-" * 80 + "\n\n"
         else:
             formatted += "No relevant documents found.\n"
@@ -136,12 +214,12 @@ class MultiHopReasoner:
         
         # From vector results
         for chunk in context.vector_results:
-            article_id = chunk.get("article_id")
+            article_id = self._chunk_get(chunk, "article_id")
             if article_id and article_id not in articles:
                 articles[article_id] = {
                     "article_id": article_id,
-                    "source": chunk.get("source", "Unknown"),
-                    "title": chunk.get("metadata", {}).get("title", "")
+                    "source": self._chunk_source(chunk),
+                    "title": self._chunk_get(chunk, "metadata", {}).get("title", "")
                 }
         
         return list(articles.values())

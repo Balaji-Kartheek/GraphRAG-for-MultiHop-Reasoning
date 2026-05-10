@@ -1,27 +1,58 @@
 """
 Answer generation module
-Uses Gemini to generate answers from retrieved context
+Uses configured LLM backend to generate answers from retrieved context
 """
 import google.generativeai as genai
+import requests
 from typing import Dict, Any, List
 from config.settings import settings
 from config.logger import log
 from config.models import QueryResult, RetrievalContext
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+
+
+def _should_retry_generate(exc: Exception) -> bool:
+    """Retry only for transient non-quota errors."""
+    return not AnswerGenerator._is_rate_limit_error(exc)
 
 
 class AnswerGenerator:
-    """Generate answers using Gemini Flash"""
+    """Generate answers using configured LLM provider"""
     
     def __init__(self):
-        """Initialize Gemini API"""
-        if not settings.gemini_api_key:
-            log.warning("Gemini API key not set")
-        
-        genai.configure(api_key=settings.gemini_api_key)
-        self.model = genai.GenerativeModel(settings.gemini_model)
-        
-        log.info("AnswerGenerator initialized with Gemini Flash")
+        """Initialize configured LLM backend"""
+        self.provider = (settings.llm_provider or "ollama").lower()
+        self.model = None
+        self.ollama_generate_url = settings.ollama_base_url.rstrip("/") + "/api/generate"
+
+        if self.provider == "gemini":
+            if not settings.gemini_api_key:
+                log.warning("Gemini API key not set")
+            genai.configure(api_key=settings.gemini_api_key)
+            self.model = genai.GenerativeModel(settings.gemini_model)
+            log.info(f"AnswerGenerator initialized with Gemini ({settings.gemini_model})")
+        else:
+            # Default path: Ollama-first
+            self.provider = "ollama"
+            log.info(
+                f"AnswerGenerator initialized with Ollama ({settings.ollama_model}) "
+                f"at {settings.ollama_base_url}"
+            )
+
+    @staticmethod
+    def _chunk_get(chunk: Any, key: str, default=None):
+        """Read field from either dict chunk or Pydantic model chunk."""
+        if isinstance(chunk, dict):
+            return chunk.get(key, default)
+        return getattr(chunk, key, default)
+
+    def _chunk_source(self, chunk: Any) -> str:
+        """Resolve source from top-level field or metadata fallback."""
+        source = self._chunk_get(chunk, "source")
+        if source:
+            return source
+        metadata = self._chunk_get(chunk, "metadata", {}) or {}
+        return metadata.get("source", "Unknown")
     
     @staticmethod
     def has_sufficient_context(context: RetrievalContext) -> bool:
@@ -71,17 +102,25 @@ Now provide your response:"""
     @staticmethod
     def _is_rate_limit_error(err: Exception) -> bool:
         """Detect Gemini quota/rate-limit errors from wrapped exceptions."""
-        msg = str(err).lower()
-        return (
-            "429" in msg
-            or "resourceexhausted" in msg
-            or "quota" in msg
-            or "rate limit" in msg
-        )
+        current = err
+        # Unwrap common nested exceptions (e.g., tenacity RetryError -> RuntimeError cause)
+        while current is not None:
+            msg = str(current).lower()
+            if (
+                "429" in msg
+                or "resourceexhausted" in msg
+                or "quota" in msg
+                or "rate limit" in msg
+                or "retryerror" in msg
+            ):
+                return True
+            current = getattr(current, "__cause__", None) or getattr(current, "__context__", None)
+        return False
     
     @retry(
         stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10)
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        retry=retry_if_exception(_should_retry_generate),
     )
     def generate_answer(
         self, 
@@ -89,26 +128,45 @@ Now provide your response:"""
         formatted_context: str
     ) -> str:
         """
-        Generate answer using Gemini
+        Generate answer using configured provider
         
         Returns generated answer text
         """
         prompt = self.create_prompt(query, formatted_context)
         
         try:
-            response = self.model.generate_content(prompt)
-            answer = response.text.strip()
+            if self.provider == "ollama":
+                answer = self._generate_answer_ollama(prompt)
+            else:
+                response = self.model.generate_content(prompt)
+                answer = response.text.strip()
             
             log.info("Generated answer successfully")
             return answer
             
         except Exception as e:
-            if self._is_rate_limit_error(e):
+            if self.provider == "gemini" and self._is_rate_limit_error(e):
                 # Surface a clean, handled signal to caller so API doesn't fail with 500.
                 log.warning(f"Gemini rate limit/quota reached while generating answer: {e}")
                 raise RuntimeError("GEMINI_RATE_LIMIT") from e
-            log.error(f"Error generating answer: {e}")
+            log.error(f"Error generating answer using {self.provider}: {e}")
             raise
+
+    def _generate_answer_ollama(self, prompt: str) -> str:
+        """Generate answer from local Ollama model."""
+        payload = {
+            "model": settings.ollama_model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": 0.2},
+        }
+        response = requests.post(self.ollama_generate_url, json=payload, timeout=180)
+        response.raise_for_status()
+        body = response.json()
+        text = (body.get("response") or "").strip()
+        if not text:
+            raise RuntimeError("OLLAMA_EMPTY_RESPONSE")
+        return text
     
     def parse_answer_response(self, answer_text: str) -> Dict[str, Any]:
         """
@@ -189,13 +247,13 @@ Now provide your response:"""
                 source_articles = []
                 article_ids = set()
                 for chunk in context.vector_results:
-                    article_id = chunk.get("article_id")
+                    article_id = self._chunk_get(chunk, "article_id")
                     if article_id and article_id not in article_ids:
                         article_ids.add(article_id)
                         source_articles.append({
                             "article_id": article_id,
-                            "source": chunk.get("source", "Unknown"),
-                            "title": chunk.get("metadata", {}).get("title", "")[:100]
+                            "source": self._chunk_source(chunk),
+                            "title": self._chunk_get(chunk, "metadata", {}).get("title", "")[:100]
                         })
 
                 reasoning_path = []
@@ -213,7 +271,34 @@ Now provide your response:"""
                     graph_paths=[[node for node in path.nodes] for path in context.graph_paths[:5]],
                     insufficient_context=False
                 )
-            raise
+            log.warning(f"Returning fallback answer due to {self.provider} generation error: {e}")
+            source_articles = []
+            article_ids = set()
+            for chunk in context.vector_results:
+                article_id = self._chunk_get(chunk, "article_id")
+                if article_id and article_id not in article_ids:
+                    article_ids.add(article_id)
+                    source_articles.append({
+                        "article_id": article_id,
+                        "source": self._chunk_source(chunk),
+                        "title": self._chunk_get(chunk, "metadata", {}).get("title", "")[:100]
+                    })
+
+            reasoning_path = []
+            for path in context.graph_paths[:5]:
+                reasoning_path.append(" -> ".join(path.nodes))
+
+            return QueryResult(
+                answer=(
+                    f"I found relevant context, but answer generation is temporarily unavailable "
+                    f"on the configured {self.provider} backend. "
+                    "Please verify the model service is running and retry."
+                ),
+                reasoning_path=reasoning_path,
+                source_articles=source_articles,
+                graph_paths=[[node for node in path.nodes] for path in context.graph_paths[:5]],
+                insufficient_context=False
+            )
         
         # Parse response
         parsed = self.parse_answer_response(answer_text)
@@ -236,13 +321,13 @@ Now provide your response:"""
         
         # From vector results
         for chunk in context.vector_results:
-            article_id = chunk.get("article_id")
+            article_id = self._chunk_get(chunk, "article_id")
             if article_id and article_id not in article_ids:
                 article_ids.add(article_id)
                 source_articles.append({
                     "article_id": article_id,
-                    "source": chunk.get("source", "Unknown"),
-                    "title": chunk.get("metadata", {}).get("title", "")[:100]
+                    "source": self._chunk_source(chunk),
+                    "title": self._chunk_get(chunk, "metadata", {}).get("title", "")[:100]
                 })
         
         # Create QueryResult

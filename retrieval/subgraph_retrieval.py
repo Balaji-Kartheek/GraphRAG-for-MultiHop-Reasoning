@@ -51,7 +51,8 @@ class SubgraphRetriever:
         # Query for paths - return nodes() and relationships() to avoid Path serialization issues
         query = f"""
         MATCH path = (n:Entity {{name: $entity}})-[*1..{depth}]-(m:Entity)
-        RETURN nodes(path) as nodes, relationships(path) as rels
+        RETURN nodes(path) as nodes, [rel IN relationships(path) | type(rel)] as rels, length(path) as path_len
+        ORDER BY path_len ASC, m.name ASC
         LIMIT {settings.max_graph_paths}
         """
         
@@ -64,7 +65,7 @@ class SubgraphRetriever:
                     nodes_list = result["nodes"]
                     rels_list = result["rels"]
                     nodes = [_get_node_name(n) for n in nodes_list]
-                    relationships = [_get_rel_type(r) for r in rels_list]
+                    relationships = [str(r) for r in rels_list]
                     
                     graph_path = GraphPath(
                         nodes=nodes,
@@ -99,6 +100,45 @@ class SubgraphRetriever:
                 all_paths[entity] = paths
         
         return all_paths
+
+    def retrieve_global_subgraph(self, depth: int = None) -> List[GraphPath]:
+        """
+        Retrieve a generic subgraph sample when no explicit entities are detected.
+
+        Prioritizes shorter paths so broad natural-language questions can still
+        receive graph context instead of returning empty results.
+        """
+        depth = depth or settings.graph_traversal_depth
+        query = f"""
+        MATCH path = (a:Entity)-[*1..{depth}]-(b:Entity)
+        WHERE id(a) < id(b)
+        RETURN nodes(path) as nodes, [rel IN relationships(path) | type(rel)] as rels, length(path) as path_len
+        ORDER BY path_len ASC, a.name ASC, b.name ASC
+        LIMIT {settings.max_graph_paths}
+        """
+
+        try:
+            results = self.neo4j_client.execute_query(query)
+            paths = []
+            for result in results:
+                if "nodes" in result and "rels" in result:
+                    nodes_list = result["nodes"]
+                    rels_list = result["rels"]
+                    nodes = [_get_node_name(n) for n in nodes_list]
+                    relationships = [str(r) for r in rels_list]
+
+                    graph_path = GraphPath(
+                        nodes=nodes,
+                        relationships=relationships,
+                        path_length=len(nodes) - 1
+                    )
+                    paths.append(graph_path)
+
+            log.info(f"Retrieved {len(paths)} fallback global graph paths")
+            return paths
+        except Exception as e:
+            log.error(f"Error retrieving fallback global subgraph: {e}")
+            return []
     
     def find_connecting_paths(
         self, 
@@ -121,7 +161,8 @@ class SubgraphRetriever:
         
         query = f"""
         MATCH path = (a:Entity {{name: $entity1}})-[*1..{max_depth}]-(b:Entity {{name: $entity2}})
-        RETURN nodes(path) as nodes, relationships(path) as rels
+        RETURN nodes(path) as nodes, [rel IN relationships(path) | type(rel)] as rels, length(path) as path_len
+        ORDER BY path_len ASC, b.name ASC
         LIMIT {settings.max_graph_paths}
         """
         
@@ -137,7 +178,7 @@ class SubgraphRetriever:
                     nodes_list = result["nodes"]
                     rels_list = result["rels"]
                     nodes = [_get_node_name(n) for n in nodes_list]
-                    relationships = [_get_rel_type(r) for r in rels_list]
+                    relationships = [str(r) for r in rels_list]
                     
                     graph_path = GraphPath(
                         nodes=nodes,
@@ -165,11 +206,18 @@ class SubgraphRetriever:
             Dict with paths and statistics
         """
         if not query_entities:
-            log.warning("No query entities provided")
+            log.warning("No query entities provided; falling back to global subgraph retrieval")
+            fallback_paths = self.retrieve_global_subgraph(depth)
+            fallback_unique = self._deduplicate_paths(fallback_paths)
+            fallback_unique.sort(key=lambda p: (p.path_length, " -> ".join(p.nodes)))
             return {
                 "entities": [],
-                "paths": [],
-                "total_paths": 0
+                "paths": fallback_unique,
+                "all_paths": fallback_unique,
+                "total_paths": len(fallback_unique),
+                "entity_paths": {},
+                "connecting_paths": [],
+                "fallback_mode": True,
             }
         
         # Get paths for each entity
@@ -194,8 +242,10 @@ class SubgraphRetriever:
         
         all_paths.extend(connecting_paths)
         
-        # Remove duplicates
+        # Remove duplicates and keep stable relevance ordering:
+        # shorter paths first so depth=3 still surfaces depth=1 neighbors.
         unique_paths = self._deduplicate_paths(all_paths)
+        unique_paths.sort(key=lambda p: (p.path_length, " -> ".join(p.nodes)))
         
         result = {
             "query_entities": query_entities,
@@ -214,8 +264,9 @@ class SubgraphRetriever:
         unique = []
         
         for path in paths:
-            # Create a tuple representation for comparison
-            path_signature = tuple(path.nodes)
+            # Include both nodes and relation types so different semantics
+            # over the same node chain are not incorrectly collapsed.
+            path_signature = (tuple(path.nodes), tuple(path.relationships))
             
             if path_signature not in seen:
                 seen.add(path_signature)
