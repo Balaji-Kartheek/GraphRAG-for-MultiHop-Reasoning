@@ -2,8 +2,13 @@
 Configuration settings for GraphRAG system
 """
 from pydantic_settings import BaseSettings
+<<<<<<< HEAD
 from pydantic import Field
 from typing import Optional
+=======
+from pydantic import Field, field_validator
+from typing import Optional, List
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 import os
 
 
@@ -26,7 +31,11 @@ class Settings(BaseSettings):
     
     # Gemini API Configuration
     gemini_api_key: str = Field(default="", env="GEMINI_API_KEY")
+<<<<<<< HEAD
     gemini_model: str = Field(default="gemini-1.5-flash", env="GEMINI_MODEL")
+=======
+    gemini_model: str = Field(default="gemini-2.0-flash", env="GEMINI_MODEL")
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     
     # Embedding Model
     embedding_model: str = Field(
@@ -55,6 +64,10 @@ class Settings(BaseSettings):
     streamlit_port: int = Field(default=8501, env="STREAMLIT_PORT")
     
     # Logging
+<<<<<<< HEAD
+=======
+    # TODO: Change the log level to INFO for production
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     log_level: str = Field(default="INFO", env="LOG_LEVEL")
     log_file: str = Field(default="logs/graphrag.log", env="LOG_FILE")
     
@@ -62,6 +75,25 @@ class Settings(BaseSettings):
     dataset_path: str = Field(default="./data/tech_news.csv", env="DATASET_PATH")
     target_articles: int = Field(default=800, env="TARGET_ARTICLES")
     
+<<<<<<< HEAD
+=======
+    # Dynamic fetch (RSS / News API)
+    news_api_key: str = Field(default="", env="NEWS_API_KEY")
+    rss_feeds: List[str] = Field(default_factory=list, env="RSS_FEEDS")
+    fetch_limit_per_run: Optional[int] = Field(default=100, env="FETCH_LIMIT_PER_RUN")
+    
+    @field_validator("rss_feeds", mode="before")
+    @classmethod
+    def parse_rss_feeds(cls, v):
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            if not v.strip():
+                return []
+            return [u.strip() for u in v.split(",") if u.strip()]
+        return []
+    
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

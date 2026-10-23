@@ -3,7 +3,11 @@ Query entity detection
 Extracts entities from user queries to enable graph traversal
 """
 import spacy
+<<<<<<< HEAD
 from typing import List, Set
+=======
+from typing import Dict, List, Set
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 from config.logger import log
 
 

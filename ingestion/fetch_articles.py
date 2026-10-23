@@ -95,11 +95,73 @@ class ArticleIngestion:
             url=row.get('url'),
             processed=False
         )
+<<<<<<< HEAD
+=======
+
+    def _create_article_from_dict(self, d: Dict[str, Any]) -> Article:
+        """Create Article object from fetcher dict (title, content, source, date, url)."""
+        title = str(d.get("title", ""))
+        content = str(d.get("content", ""))
+        source = str(d.get("source", "unknown"))
+        article_id = self.generate_article_id(title, source)
+        return Article(
+            article_id=article_id,
+            title=title,
+            content=content,
+            source=source,
+            date=d.get("date"),
+            url=d.get("url"),
+            processed=False,
+        )
+
+    def load_from_fetchers(self, limit: int = None) -> int:
+        """
+        Fetch articles from configured sources (RSS, News API), apply tech filter, insert.
+        Returns count of newly inserted articles.
+        """
+        from ingestion.sources import RSSFetcher, NewsAPIFetcher
+
+        tech_keywords = [
+            "ai", "artificial intelligence", "machine learning", "openai",
+            "microsoft", "google", "meta", "amazon", "nvidia", "apple",
+            "startup", "tech", "technology", "software", "cloud",
+            "investment", "acquisition", "partnership", "funding",
+            "api", "platform", "chip", "semiconductor", "tesla",
+        ]
+        cap = limit or getattr(settings, "fetch_limit_per_run", None) or 100
+        all_items = []
+        rss = RSSFetcher()
+        all_items.extend(rss.fetch(limit=cap))
+        remaining = cap - len(all_items)
+        if remaining > 0:
+            news = NewsAPIFetcher()
+            all_items.extend(news.fetch(limit=remaining))
+
+        def has_tech(d):
+            t, c = (d.get("title") or "").lower(), (d.get("content") or "").lower()
+            return any(kw in t or kw in c for kw in tech_keywords)
+
+        filtered = [x for x in all_items if has_tech(x)]
+        if not filtered:
+            filtered = all_items
+
+        inserted = 0
+        for d in filtered[:cap]:
+            article = self._create_article_from_dict(d)
+            if self.insert_article(article):
+                inserted += 1
+        log.info(f"load_from_fetchers: inserted {inserted} new articles")
+        return inserted
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     
     def insert_article(self, article: Article) -> bool:
         """Insert article into MongoDB, skip if exists"""
         try:
+<<<<<<< HEAD
             self.collection.insert_one(article.model_dump())
+=======
+            self.collection.insert_one(article.model_dump(exclude_none=True))
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
             return True
         except Exception as e:
             if "duplicate key error" in str(e):

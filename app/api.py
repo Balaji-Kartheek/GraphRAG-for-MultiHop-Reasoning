@@ -52,6 +52,10 @@ class QueryResponse(BaseModel):
     reasoning_path: List[str]
     source_articles: List[Dict[str, str]]
     graph_paths: Optional[List[List[str]]] = None
+<<<<<<< HEAD
+=======
+    insufficient_context: bool = False
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 
 
 class SystemStatsResponse(BaseModel):
@@ -112,7 +116,12 @@ async def query(request: QueryRequest):
             answer=result.answer,
             reasoning_path=result.reasoning_path,
             source_articles=result.source_articles,
+<<<<<<< HEAD
             graph_paths=result.graph_paths
+=======
+            graph_paths=result.graph_paths,
+            insufficient_context=result.insufficient_context
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
         )
         
     except Exception as e:
@@ -179,6 +188,22 @@ async def ingest_articles(csv_path: str, limit: Optional[int] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+<<<<<<< HEAD
+=======
+@app.post("/ingest/fetch")
+async def ingest_from_fetchers(limit: Optional[int] = None):
+    """Fetch and ingest articles from RSS/News API. Returns count of newly ingested articles."""
+    try:
+        ingestion = ArticleIngestion()
+        count = ingestion.load_from_fetchers(limit)
+        ingestion.close()
+        return {"status": "success", "articles_ingested": count}
+    except Exception as e:
+        log.error(f"Error fetching/ingesting articles: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 @app.post("/process/preprocess")
 async def preprocess_articles(limit: Optional[int] = None):
     """Preprocess articles"""

@@ -61,6 +61,10 @@ class QueryResult(BaseModel):
     source_articles: List[Dict[str, str]]
     graph_paths: Optional[List[List[str]]] = None
     confidence_score: Optional[float] = None
+<<<<<<< HEAD
+=======
+    insufficient_context: bool = False  # True when no graph/vector data to answer
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 
 
 class GraphPath(BaseModel):

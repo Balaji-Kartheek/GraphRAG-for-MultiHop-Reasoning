@@ -118,6 +118,19 @@ This runs all steps:
 5. Build knowledge graph (Neo4j)
 6. Generate embeddings (ChromaDB)
 
+<<<<<<< HEAD
+=======
+To ingest from RSS/News API instead of CSV:
+```bash
+python scripts/run_pipeline.py --source fetch --limit 100
+```
+
+**Scheduled updates (cron):** Run fetch + full pipeline every 6 hours:
+```bash
+0 */6 * * * cd /path/to/GraphRAG && .venv/bin/python -m scripts.scheduled_update
+```
+
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 ### Step-by-Step (Manual)
 
 ```bash
@@ -140,6 +153,114 @@ python -m graph.graph_builder
 python -m vector.chroma_client
 ```
 
+<<<<<<< HEAD
+=======
+### Pipeline Steps: What Happens at Each Step (2 Examples)
+
+Two example articles are traced through all 6 steps so you can see the input and output at each stage.
+
+**Case A – Investment article**  
+*Title:* Microsoft Invests $10B in OpenAI  
+*Content:* Microsoft announced a $10 billion investment in OpenAI, strengthening their partnership in AI development.
+
+**Case B – Partnership article**  
+*Title:* OpenAI Partners with Nvidia for GPU Infrastructure  
+*Content:* OpenAI has formed a strategic partnership with Nvidia to leverage their advanced GPU technology for AI model training.
+
+---
+
+**Step 1 – Ingest (MongoDB)**
+
+- **Input:** CSV rows (title, content, source, date, url).
+- **Action:** Filter tech/AI rows, generate `article_id` (hash of title+source), insert into MongoDB. Duplicates (same title+source) are skipped.
+- **Output (per article):**
+
+| Field        | Case A                    | Case B                          |
+|-------------|----------------------------|----------------------------------|
+| article_id  | (hash, e.g. a1b2c3...)     | (different hash)                 |
+| title       | Microsoft Invests $10B...   | OpenAI Partners with Nvidia...   |
+| content     | Microsoft announced...     | OpenAI has formed...             |
+| source      | TechCrunch                 | VentureBeat                      |
+| processed   | false                      | false                            |
+
+---
+
+**Step 2 – Preprocess**
+
+- **Input:** MongoDB articles with `processed: false`.
+- **Action:** Clean text (strip HTML, URLs, normalize spaces), segment content into sentences with spaCy, update same document.
+- **Output (added/updated on same doc):**
+
+| Field           | Case A              | Case B              |
+|-----------------|---------------------|---------------------|
+| title           | (cleaned same)      | (cleaned same)       |
+| content         | (cleaned same)      | (cleaned same)       |
+| sentences       | ["Microsoft announced...", "strengthening their..."] | ["OpenAI has formed...", ...] |
+| sentence_count  | 2                   | 2                   |
+
+*(Note: `processed` is not set to true here; later steps use other flags.)*
+
+---
+
+**Step 3 – Extract entities (NER)**
+
+- **Input:** Articles that don’t have an `entities` field yet (from MongoDB).
+- **Action:** Run spaCy NER on title + content; keep types ORG, PERSON, PRODUCT, GPE, MONEY, etc.; normalize (e.g. "Open AI" → "OpenAI"); store by type.
+- **Output (stored in same doc as `entities`):**
+
+| Type  | Case A              | Case B              |
+|-------|---------------------|---------------------|
+| ORG   | ["Microsoft", "OpenAI"] | ["OpenAI", "Nvidia"] |
+| MONEY | ["$10 billion"]     | (none)              |
+
+---
+
+**Step 4 – Extract triples (Gemini)**
+
+- **Input:** Articles with `triples_extracted != true`; text = title + content.
+- **Action:** Send text to Gemini; get (subject, relation, object, confidence); filter by confidence (e.g. ≥ 0.8); store in MongoDB `triples` collection and set `triples_extracted: true` on the article.
+- **Output (in `triples` collection, one doc per article):**
+
+| Article (Case A)      | subject   | relation    | object  | confidence |
+|------------------------|-----------|-------------|--------|------------|
+| (article_id for A)     | Microsoft | INVESTED_IN | OpenAI | 0.95       |
+
+| Article (Case B)      | subject | relation       | object  | confidence |
+|------------------------|---------|----------------|---------|------------|
+| (article_id for B)     | OpenAI  | PARTNERED_WITH | Nvidia  | 0.92       |
+
+---
+
+**Step 5 – Build knowledge graph (Neo4j)**
+
+- **Input:** All documents in the `triples` collection.
+- **Action:** For each triple: create/merge nodes for subject and object (label `Entity`), create relationship with type (e.g. INVESTED_IN, PARTNERED_WITH). Node names normalized.
+- **Output (in Neo4j):**
+
+| Case A in graph      | Case B in graph       |
+|----------------------|------------------------|
+| (Microsoft)-[:INVESTED_IN]->(OpenAI) | (OpenAI)-[:PARTNERED_WITH]->(Nvidia) |
+
+Combined graph: **Microsoft → INVESTED_IN → OpenAI → PARTNERED_WITH → Nvidia** (so multi-hop queries like “Who collaborates with companies funded by Microsoft?” can traverse Microsoft → OpenAI → Nvidia).
+
+---
+
+**Step 6 – Embed documents (ChromaDB)**
+
+- **Input:** Articles with `embedded != true`.
+- **Action:** Concatenate title + content, chunk (e.g. size 300, overlap 50), embed each chunk with sentence-transformers, store in ChromaDB with metadata (article_id, source, title), set `embedded: true` on the article.
+- **Output:**
+
+| Case A                         | Case B                          |
+|--------------------------------|----------------------------------|
+| 1+ chunks (e.g. "Microsoft announced a $10 billion...") | 1+ chunks (e.g. "OpenAI has formed a strategic...") |
+| Each chunk: vector (384-dim) + metadata | Same                               |
+
+ChromaDB is used for semantic search; Neo4j is used for graph traversal. Together they feed the multi-hop reasoner and answer generator.
+
+---
+
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 ## 💻 Usage
 
 ### Streamlit UI
@@ -166,6 +287,25 @@ curl -X POST "http://localhost:8000/query" \
   }'
 ```
 
+<<<<<<< HEAD
+=======
+### MongoDB Tables
+
+browse for: mongodb://localhost:27017
+
+open the respective connections.
+
+### Neo4J Graphs:
+
+browse to :
+
+RUN Query:
+```
+   MATCH (n)-[r]->(m) RETURN n, r, m LIMIT 50
+```
+
+
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 ### Python SDK
 
 ```python

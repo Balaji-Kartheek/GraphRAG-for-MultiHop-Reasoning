@@ -6,6 +6,14 @@ import sys
 import argparse
 from pathlib import Path
 
+<<<<<<< HEAD
+=======
+# Ensure project root is on path when run as python scripts/run_pipeline.py
+_project_root = Path(__file__).resolve().parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 from ingestion.fetch_articles import ArticleIngestion
 from ingestion.preprocess import ArticlePreprocessor
 from extraction.ner import EntityExtractor
@@ -16,11 +24,17 @@ from config.logger import log
 
 
 def run_full_pipeline(
+<<<<<<< HEAD
     dataset_path: str,
+=======
+    dataset_path: str = None,
+    source: str = "csv",
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     limit: int = None,
     skip_steps: list = None
 ):
     """
+<<<<<<< HEAD
     Run the complete GraphRAG pipeline
     
     Args:
@@ -39,6 +53,31 @@ def run_full_pipeline(
         log.info("\n[STEP 1/6] Ingesting articles from dataset...")
         ingestion = ArticleIngestion()
         count = ingestion.load_from_csv(dataset_path, limit)
+=======
+    Run the complete GraphRAG pipeline.
+
+    Args:
+        dataset_path: Path to CSV dataset (required when source=csv).
+        source: "csv" = load from CSV, "fetch" = load from RSS/News API.
+        limit: Limit number of articles to process.
+        skip_steps: List of steps to skip.
+    """
+    skip_steps = skip_steps or []
+
+    log.info("=" * 80)
+    log.info("STARTING GRAPHRAG PIPELINE")
+    log.info("=" * 80)
+
+    # Step 1: Ingest Articles
+    if "ingest" not in skip_steps:
+        ingestion = ArticleIngestion()
+        if source == "fetch":
+            log.info("\n[STEP 1/6] Ingesting articles from fetchers (RSS/News API)...")
+            count = ingestion.load_from_fetchers(limit)
+        else:
+            log.info("\n[STEP 1/6] Ingesting articles from dataset...")
+            count = ingestion.load_from_csv(dataset_path, limit)
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
         log.info(f"✓ Ingested {count} articles")
         ingestion.close()
     else:
@@ -124,6 +163,7 @@ def run_full_pipeline(
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description="GraphRAG Pipeline Orchestrator")
+<<<<<<< HEAD
     
     parser.add_argument(
         "--dataset",
@@ -132,19 +172,40 @@ def main():
         help="Path to CSV dataset"
     )
     
+=======
+    parser.add_argument(
+        "--source",
+        type=str,
+        choices=["csv", "fetch"],
+        default="csv",
+        help="Ingestion source: csv (from file) or fetch (RSS/News API)",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default=None,
+        help="Path to CSV dataset (required when --source csv)",
+    )
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     parser.add_argument(
         "--limit",
         type=int,
         default=None,
+<<<<<<< HEAD
         help="Limit number of articles to process"
     )
     
+=======
+        help="Limit number of articles to process",
+    )
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     parser.add_argument(
         "--skip",
         type=str,
         nargs="+",
         default=[],
         choices=["ingest", "preprocess", "entities", "triples", "graph", "embed"],
+<<<<<<< HEAD
         help="Steps to skip"
     )
     
@@ -160,6 +221,26 @@ def main():
             dataset_path=args.dataset,
             limit=args.limit,
             skip_steps=args.skip
+=======
+        help="Steps to skip",
+    )
+    args = parser.parse_args()
+
+    if args.source == "csv":
+        if not args.dataset:
+            log.error("--dataset is required when --source csv")
+            sys.exit(1)
+        if not Path(args.dataset).exists():
+            log.error(f"Dataset not found: {args.dataset}")
+            sys.exit(1)
+
+    try:
+        run_full_pipeline(
+            dataset_path=args.dataset,
+            source=args.source,
+            limit=args.limit,
+            skip_steps=args.skip,
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
         )
     except Exception as e:
         log.error(f"Pipeline failed: {e}")

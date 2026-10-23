@@ -9,6 +9,23 @@ from config.logger import log
 from config.models import GraphPath
 
 
+<<<<<<< HEAD
+=======
+def _get_node_name(n) -> str:
+    """Extract name from Neo4j Node (handles both raw object and serialized dict)"""
+    if isinstance(n, dict):
+        return n.get("name") or (n.get("properties") or {}).get("name", "")
+    return getattr(n, "get", lambda k: None)("name") or ""
+
+
+def _get_rel_type(r) -> str:
+    """Extract type from Neo4j Relationship"""
+    if isinstance(r, dict):
+        return r.get("type", "")
+    return getattr(r, "type", str(r) if r else "")
+
+
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 class SubgraphRetriever:
     """Retrieve relevant subgraphs from knowledge graph"""
     
@@ -34,10 +51,17 @@ class SubgraphRetriever:
         """
         depth = depth or settings.graph_traversal_depth
         
+<<<<<<< HEAD
         # Query for paths
         query = f"""
         MATCH path = (n:Entity {{name: $entity}})-[*1..{depth}]-(m:Entity)
         RETURN path
+=======
+        # Query for paths - return nodes() and relationships() to avoid Path serialization issues
+        query = f"""
+        MATCH path = (n:Entity {{name: $entity}})-[*1..{depth}]-(m:Entity)
+        RETURN nodes(path) as nodes, relationships(path) as rels
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
         LIMIT {settings.max_graph_paths}
         """
         
@@ -46,12 +70,20 @@ class SubgraphRetriever:
             
             paths = []
             for result in results:
+<<<<<<< HEAD
                 if "path" in result:
                     path_obj = result["path"]
                     
                     # Extract nodes and relationships
                     nodes = [node["name"] for node in path_obj.nodes]
                     relationships = [rel.type for rel in path_obj.relationships]
+=======
+                if "nodes" in result and "rels" in result:
+                    nodes_list = result["nodes"]
+                    rels_list = result["rels"]
+                    nodes = [_get_node_name(n) for n in nodes_list]
+                    relationships = [_get_rel_type(r) for r in rels_list]
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
                     
                     graph_path = GraphPath(
                         nodes=nodes,
@@ -108,7 +140,11 @@ class SubgraphRetriever:
         
         query = f"""
         MATCH path = (a:Entity {{name: $entity1}})-[*1..{max_depth}]-(b:Entity {{name: $entity2}})
+<<<<<<< HEAD
         RETURN path
+=======
+        RETURN nodes(path) as nodes, relationships(path) as rels
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
         LIMIT {settings.max_graph_paths}
         """
         
@@ -120,10 +156,18 @@ class SubgraphRetriever:
             
             paths = []
             for result in results:
+<<<<<<< HEAD
                 if "path" in result:
                     path_obj = result["path"]
                     nodes = [node["name"] for node in path_obj.nodes]
                     relationships = [rel.type for rel in path_obj.relationships]
+=======
+                if "nodes" in result and "rels" in result:
+                    nodes_list = result["nodes"]
+                    rels_list = result["rels"]
+                    nodes = [_get_node_name(n) for n in nodes_list]
+                    relationships = [_get_rel_type(r) for r in rels_list]
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
                     
                     graph_path = GraphPath(
                         nodes=nodes,

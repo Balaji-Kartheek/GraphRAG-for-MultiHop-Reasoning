@@ -13,6 +13,10 @@ from config.models import Entity
 class EntityExtractor:
     """Extract named entities from articles"""
     
+<<<<<<< HEAD
+=======
+    # TODO: Add more entity types, Implement the Scalability for the Entities
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     # Relevant entity types for Tech/AI news
     RELEVANT_LABELS = {
         "ORG",      # Companies, organizations
@@ -152,7 +156,11 @@ class EntityExtractor:
         
         Returns count of processed articles
         """
+<<<<<<< HEAD
         query = {"entities": {"$exists": False}}
+=======
+        query = {"$or": [{"entities": {"$exists": False}}, {"entities": None}]}
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
         articles = list(self.collection.find(query, {"article_id": 1}).limit(limit if limit else 0))
         
         log.info(f"Extracting entities from {len(articles)} articles")
@@ -179,7 +187,11 @@ class EntityExtractor:
         articles = self.collection.find({"entities": {"$exists": True}}, {"entities": 1})
         
         for article in articles:
+<<<<<<< HEAD
             entities_dict = article.get("entities", {})
+=======
+            entities_dict = article.get("entities") or {}
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
             
             for label, entities in entities_dict.items():
                 if label not in all_entities:

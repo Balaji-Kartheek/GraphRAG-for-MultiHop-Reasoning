@@ -23,6 +23,16 @@ class AnswerGenerator:
         
         log.info("AnswerGenerator initialized with Gemini Flash")
     
+<<<<<<< HEAD
+=======
+    @staticmethod
+    def has_sufficient_context(context: RetrievalContext) -> bool:
+        """Return False when there is no graph or vector data to answer from."""
+        has_graph = bool(context.graph_paths)
+        has_vector = bool(context.vector_results)
+        return has_graph or has_vector
+    
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
     def create_prompt(self, query: str, context: str) -> str:
         """
         Create prompt for answer generation
@@ -42,7 +52,11 @@ Instructions:
 2. Show your reasoning by explaining which graph paths and documents support your answer
 3. If the context contains graph paths, explain the multi-hop reasoning chain
 4. Cite specific sources (article IDs) that support your answer
+<<<<<<< HEAD
 5. If the context is insufficient to answer the question, say so clearly
+=======
+5. If the context is insufficient or empty, you MUST say clearly: "I don't have enough information in the knowledge base to answer this question." Do not guess or make up facts.
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 6. Be concise but thorough
 
 Output Format:
@@ -137,11 +151,35 @@ Now provide your response:"""
         """
         Main method: generate complete query result
         
+<<<<<<< HEAD
         Returns QueryResult object
         """
         log.info(f"Generating answer for query: {query}")
         
         # Generate answer
+=======
+        Returns QueryResult object. When no context is available, returns a safe
+        "insufficient context" result without calling the LLM.
+        """
+        log.info(f"Generating answer for query: {query}")
+        
+        # No graph paths and no vector results: return safe result, no LLM call
+        if not self.has_sufficient_context(context):
+            log.warning("No context retrieved; returning insufficient_context result")
+            return QueryResult(
+                answer=(
+                    "I don't have enough information in the knowledge base to answer this question. "
+                    "No relevant graph paths or documents were found. Try rephrasing your query, "
+                    "or the topic may not be covered in the ingested articles."
+                ),
+                reasoning_path=[],
+                source_articles=[],
+                graph_paths=[],
+                insufficient_context=True
+            )
+        
+        # Generate answer with LLM
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
         answer_text = self.generate_answer(query, formatted_context)
         
         # Parse response
@@ -179,7 +217,12 @@ Now provide your response:"""
             answer=parsed["answer"] or answer_text,
             reasoning_path=reasoning_path,
             source_articles=source_articles,
+<<<<<<< HEAD
             graph_paths=[[node for node in path.nodes] for path in context.graph_paths[:5]]
+=======
+            graph_paths=[[node for node in path.nodes] for path in context.graph_paths[:5]],
+            insufficient_context=False
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
         )
         
         log.info("Query result generated successfully")

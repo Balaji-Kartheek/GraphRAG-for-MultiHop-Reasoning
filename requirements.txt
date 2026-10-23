@@ -14,13 +14,21 @@ neo4j==5.15.0
 chromadb==0.4.22
 
 # ML & Embeddings
+<<<<<<< HEAD
 sentence-transformers==2.2.2
+=======
+sentence-transformers>=2.3.0,<3.0
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 torch==2.1.2
 transformers==4.36.2
 
 # API Clients
 google-generativeai==0.3.2
 requests==2.31.0
+<<<<<<< HEAD
+=======
+feedparser==6.0.10
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 
 # Web Framework
 fastapi==0.109.0
@@ -40,9 +48,17 @@ tqdm==4.66.1
 loguru==0.7.2
 tenacity==8.2.3
 
+<<<<<<< HEAD
 # Voice (Optional)
 SpeechRecognition==3.10.1
 gTTS==2.5.0
+=======
+# Voice (STT + TTS)
+SpeechRecognition==3.10.1
+gTTS==2.5.0
+pydub==0.25.1
+streamlit-mic-recorder>=0.0.6
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
 
 # Translation (Optional)
 deep-translator==1.11.4
@@ -54,4 +70,12 @@ pytest-asyncio==0.23.2
 # Development
 black==23.12.1
 flake8==7.0.0
+<<<<<<< HEAD
 mypy==1.8.0
+=======
+mypy==1.8.0
+
+
+# Extra requirements
+# 1. python -m spacy download en_core_web_sm
+>>>>>>> 6523998fa036486181be393d9c199ceb5a51335e
